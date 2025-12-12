@@ -1,0 +1,123 @@
+.top-restaurants {
+  width: 100%;
+  padding: 100px 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.restaurants-title {
+  font-size: 48px;
+  font-weight: 900;
+  color: #2d2d2d;
+  margin-bottom: 80px;
+  text-align: center;
+  letter-spacing: -1px;
+}
+
+.restaurants-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.restaurant-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 24px;
+  padding: 30px;
+  text-align: center;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.restaurant-card:hover {
+  transform: translateY(-15px);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-image {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.food-emoji {
+  font-size: 80px;
+  display: block;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1));
+}
+
+.discount-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+}
+
+.restaurant-info h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.cuisine {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.description {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.speciality {
+  font-size: 13px;
+  color: #d32f2f;
+  margin-bottom: 20px;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.restaurant-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.rating, .delivery-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+
+.rating {
+  color: #ff9800;
+}
+
+@media (max-width: 768px) {
+  .restaurants-container {
+    grid-template-columns: 1fr;
+    padding: 0 20px;
+  }
+  
+  .restaurants-title {
+    font-size: 36px;
+  }
+}
