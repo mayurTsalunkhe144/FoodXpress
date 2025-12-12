@@ -1,28 +1,36 @@
-import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import './App.css'
+import './styles/global.css'
 
-// Module imports - each team member can import their entire module
-// import { LoginForm, useAuth } from './modules/auth';
-// import { UserProfile, useUser } from './modules/user-management';
-// import { Header, Navbar, useNavigation } from './modules/home-navigation';
-// import { OrderList, useOrders } from './modules/order-management';
-// import { Dashboard, useAnalytics } from './modules/dashboard-analytics';
-// import { Button, Modal } from './shared';
+// Module imports
+import { Navbar, Header, HomePage } from './modules/home-navigation';
+import { ErrorBoundary } from './shared';
+
+function AppContent() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
+  return (
+    <ErrorBoundary>
+      <Navbar />
+      {isHomePage && <Header />}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/menu" element={<div>Menu Page - Coming Soon</div>} />
+        <Route path="/restaurants" element={<div>Restaurants Page - Coming Soon</div>} />
+        <Route path="/offers" element={<div>Offers Page - Coming Soon</div>} />
+        <Route path="/cart" element={<div>Cart Page - Coming Soon</div>} />
+      </Routes>
+    </ErrorBoundary>
+  );
+}
 
 function App() {
   return (
-    <div className="app">
-      <h1>FoodXpress - Modular Architecture</h1>
-      <p>Each team member can work in their assigned module:</p>
-      <ul>
-        <li>Auth Module - Janardhan</li>
-        <li>User Management - Tanushka</li>
-        <li>Home & Navigation - Aryan</li>
-        <li>Order Management - Prathamesh</li>
-        <li>Dashboard & Analytics - Mayur</li>
-      </ul>
-    </div>
-  )
+    <Router>
+      <AppContent />
+    </Router>
+  );
 }
 
 export default App

@@ -4,7 +4,6 @@
 // Components
 export { default as Header } from './components/Header.jsx';
 export { default as Navbar } from './components/Navbar.jsx';
-export { default as Sidebar } from './components/Sidebar.jsx';
 export { default as HomePage } from './components/HomePage.jsx';
 
 // Hooks
