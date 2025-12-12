@@ -10,6 +10,7 @@ export { default as PopularDishes } from './components/PopularDishes.jsx';
 export { default as HowItWorks } from './components/HowItWorks.jsx';
 export { default as TopRestaurants } from './components/TopRestaurants.jsx';
 export { default as Testimonials } from './components/Testimonials.jsx';
+export { default as Footer } from './components/Footer.jsx';
 
 // Services
 export { default as ApiService } from './services/apiService.jsx';

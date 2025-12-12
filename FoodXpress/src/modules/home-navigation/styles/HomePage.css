@@ -1,0 +1,17 @@
+/* HomePage Styles */
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-content {
+  flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .home-page {
+    padding: 0;
+  }
+}
