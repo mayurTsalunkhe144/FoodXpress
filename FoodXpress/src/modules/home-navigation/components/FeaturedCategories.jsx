@@ -20,10 +20,10 @@ const FeaturedCategories = () => {
     const fetchCategories = async () => {
       try {
         const data = await ApiService.fetchCategories();
-        const categoriesWithImages = data.map((name, index) => ({
+        const categoriesWithImages = data.map((category, index) => ({
           id: index + 1,
-          name,
-          image: categoryImages[name] || "/NavLogo.png"
+          name: typeof category === 'string' ? category : category.name,
+          image: categoryImages[typeof category === 'string' ? category : category.name] || "/NavLogo.png"
         }));
         setCategories(categoriesWithImages);
       } catch (error) {

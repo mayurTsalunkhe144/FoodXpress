@@ -38,7 +38,12 @@ class ApiService {
       return await this.makeRequest(`${API_BASE_URL}/restaurants`);
     } catch (error) {
       console.error('Error fetching restaurants:', error);
-      return [];
+      // Return fallback data for development
+      return [
+        { id: 1, name: 'Sample Restaurant 1', cuisine: 'Italian', rating: 4.5 },
+        { id: 2, name: 'Sample Restaurant 2', cuisine: 'Chinese', rating: 4.2 },
+        { id: 3, name: 'Sample Restaurant 3', cuisine: 'Indian', rating: 4.7 }
+      ];
     }
   }
 
@@ -75,7 +80,12 @@ class ApiService {
       return await this.makeRequest(`${API_BASE_URL}/menuitems/popular`);
     } catch (error) {
       console.error('Error fetching popular menu items:', error);
-      return [];
+      // Return fallback data for development
+      return [
+        { id: 1, name: 'Margherita Pizza', price: 299, restaurant: 'Sample Restaurant 1' },
+        { id: 2, name: 'Chicken Biryani', price: 349, restaurant: 'Sample Restaurant 2' },
+        { id: 3, name: 'Pasta Alfredo', price: 279, restaurant: 'Sample Restaurant 3' }
+      ];
     }
   }
 
@@ -94,7 +104,14 @@ class ApiService {
       return await this.makeRequest(`${API_BASE_URL}/categories`);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      return [];
+      // Return fallback data for development
+      return [
+        { id: 1, name: 'Pizza', icon: '🍕' },
+        { id: 2, name: 'Burgers', icon: '🍔' },
+        { id: 3, name: 'Chinese', icon: '🥡' },
+        { id: 4, name: 'Indian', icon: '🍛' },
+        { id: 5, name: 'Desserts', icon: '🍰' }
+      ];
     }
   }
 

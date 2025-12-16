@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import './App.css';
 import './styles/global.css';
@@ -10,6 +11,9 @@ import { ErrorBoundary } from './shared';
 import Menu from './pages/Menu/Menu';
 import Restaurants from './pages/Restaurants/Restaurants';
 import Offers from './pages/Offers/Offers';
+
+// Order Management imports
+import OrderApp from './modules/order-management/OrderApp.jsx';
 
 function AppContent() {
   const location = useLocation();
@@ -24,7 +28,12 @@ function AppContent() {
         <Route path="/menu" element={<Menu />} />
         <Route path="/restaurants" element={<Restaurants />} />
         <Route path="/offers" element={<Offers />} />
-        <Route path="/cart" element={<div>Cart Page - Coming Soon</div>} />
+        <Route path="/cart/*" element={<OrderApp />} />
+        <Route path="/checkout/*" element={<OrderApp />} />
+        <Route path="/orders/*" element={<OrderApp />} />
+        <Route path="/order-status/*" element={<OrderApp />} />
+        <Route path="/order-summary/*" element={<OrderApp />} />
+        <Route path="/order-tracking/*" element={<OrderApp />} />
       </Routes>
     </ErrorBoundary>
   );

@@ -1,18 +1,21 @@
-// Order Management Module - Prathamesh
+// Order Management Module - Prathamesh (Micro Frontend)
 // Export all order management components, hooks, and services
 
-// Components
-export { default as OrderList } from './components/OrderList.jsx';
-export { default as OrderDetails } from './components/OrderDetails.jsx';
-export { default as CreateOrder } from './components/CreateOrder.jsx';
-export { default as OrderStatus } from './components/OrderStatus.jsx';
+// Main App
+export { default as OrderApp } from './OrderApp.jsx';
 
-// Hooks
-export { useOrders } from './hooks/useOrders.jsx';
-export { useOrderStatus } from './hooks/useOrderStatus.jsx';
+// Pages
+export { default as CartPage } from './pages/CartPage.jsx';
+
+// Components
+export { default as CartItem } from './components/CartItem.jsx';
 
 // Services
 export * from './services/orderService.jsx';
 
-// Utils
-export * from './utils/orderUtils.jsx';
+// Hooks (to be implemented)
+// export { useOrders } from './hooks/useOrders.jsx';
+// export { useOrderStatus } from './hooks/useOrderStatus.jsx';
+
+// Utils (to be implemented)
+// export * from './utils/orderUtils.jsx';
