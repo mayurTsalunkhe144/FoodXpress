@@ -85,7 +85,7 @@ function RestaurantDetails() {
   if (!restaurant) {
     return (
       <div className="space-y-4">
-        <button onClick={() => navigate('/admin/restaurants')} className="px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--primary-red)', color: 'white' }}>
+        <button onClick={() => navigate('/dashboard/admin/restaurants')} className="px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--primary-red)', color: 'white' }}>
           ← Back to Restaurants
         </button>
         <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>Restaurant not found</div>
@@ -95,7 +95,7 @@ function RestaurantDetails() {
 
   return (
     <div className="space-y-8 pb-8">
-      <button onClick={() => navigate('/admin/restaurants')} className="px-4 py-2 rounded-lg font-semibold" style={{ backgroundColor: 'var(--primary-red)', color: 'white' }}>
+      <button onClick={() => navigate('/dashboard/admin/restaurants')} className="px-4 py-2 rounded-lg font-semibold" style={{ backgroundColor: 'var(--primary-red)', color: 'white' }}>
         ← Back to Restaurants
       </button>
 
@@ -218,7 +218,7 @@ function RestaurantDetails() {
           icon="📦"
           restaurantId={restaurant.id}
           endpoint={`/admin/restaurants/${restaurant.id}/orders`}
-          detailsPath={`/admin/restaurants/${restaurant.id}/orders`}
+          detailsPath={`/dashboard/admin/restaurants/${restaurant.id}/orders`}
         />
 
         <PreviewSection
@@ -226,7 +226,7 @@ function RestaurantDetails() {
           icon="🍽️"
           restaurantId={restaurant.id}
           endpoint={`/menu-items?restaurantId=${restaurant.id}`}
-          detailsPath={`/admin/restaurants/${restaurant.id}/menu`}
+          detailsPath={`/dashboard/admin/restaurants/${restaurant.id}/menu`}
         />
 
         <PreviewSection
@@ -234,7 +234,7 @@ function RestaurantDetails() {
           icon="📂"
           restaurantId={restaurant.id}
           endpoint={`/admin/restaurants/${restaurant.id}/categories`}
-          detailsPath={`/admin/restaurants/${restaurant.id}/categories`}
+          detailsPath={`/dashboard/admin/restaurants/${restaurant.id}/categories`}
         />
       </div>
 

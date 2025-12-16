@@ -1,22 +1,32 @@
 import { Link, useLocation } from 'react-router-dom'
+import { getUserFromStorage, isAdmin as checkIsAdmin } from '../../utils/auth.js'
 
 function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation()
-  const isAdmin = location.pathname.includes('/admin')
+  const user = getUserFromStorage()
+  
+  // Use same fallback logic as AppRouter
+  const isAdminPath = location.pathname.includes('/admin')
+  const fallbackUser = isAdminPath 
+    ? { userId: 1, roleId: 1, fullName: 'Demo Admin' }
+    : { userId: 2, roleId: 3, fullName: 'Demo Restaurant Owner' }
+  
+  const currentUser = user || fallbackUser
+  const isAdmin = checkIsAdmin(currentUser)
 
   const adminLinks = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/admin/restaurants', label: 'Restaurants', icon: '🏪' },
-    { path: '/admin/users', label: 'Users', icon: '👥' },
-    { path: '/admin/analytics', label: 'Analytics', icon: '📈' },
+    { path: '/dashboard/admin/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/dashboard/admin/restaurants', label: 'Restaurants', icon: '🏪' },
+    { path: '/dashboard/admin/users', label: 'Users', icon: '👥' },
+    { path: '/dashboard/admin/analytics', label: 'Analytics', icon: '📈' },
   ]
 
   const restaurantLinks = [
-    { path: '/restaurant/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/restaurant/orders', label: 'Orders', icon: '📦' },
-    { path: '/restaurant/menu', label: 'Menu', icon: '🍽️' },
-    { path: '/restaurant/categories', label: 'Categories', icon: '📂' },
-    { path: '/restaurant/profile', label: 'Profile', icon: '👤' },
+    { path: '/dashboard/restaurant/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/dashboard/restaurant/orders', label: 'Orders', icon: '📦' },
+    { path: '/dashboard/restaurant/menu', label: 'Menu', icon: '🍽️' },
+    { path: '/dashboard/restaurant/categories', label: 'Categories', icon: '📂' },
+    { path: '/dashboard/restaurant/profile', label: 'Profile', icon: '👤' },
   ]
 
   const links = isAdmin ? adminLinks : restaurantLinks

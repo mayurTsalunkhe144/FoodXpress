@@ -28,7 +28,7 @@ function PendingTable({ restaurants = [] }) {
           restaurants.map((restaurant) => (
             <Table.Row
               key={restaurant.restaurantId}
-              onClick={() => navigate(`/admin/restaurant/${restaurant.restaurantId}`)}
+              onClick={() => navigate(`/dashboard/admin/restaurant/${restaurant.restaurantId}`)}
             >
               <Table.Cell className="font-medium">{restaurant.restaurantName}</Table.Cell>
               <Table.Cell>{restaurant.email}</Table.Cell>

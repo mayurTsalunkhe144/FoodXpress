@@ -35,7 +35,7 @@ function AdminRestaurantDetail() {
     try {
       await approve(id, {})
       alert('Restaurant approved successfully')
-      navigate('/admin/pending')
+      navigate('/dashboard/admin/pending')
     } catch (error) {
       console.error('Failed to approve restaurant:', error)
       alert('Failed to approve restaurant')
@@ -46,7 +46,7 @@ function AdminRestaurantDetail() {
     try {
       await reject(id, { rejectionReason: reason })
       alert('Restaurant rejected successfully')
-      navigate('/admin/pending')
+      navigate('/dashboard/admin/pending')
     } catch (error) {
       console.error('Failed to reject restaurant:', error)
       alert('Failed to reject restaurant')

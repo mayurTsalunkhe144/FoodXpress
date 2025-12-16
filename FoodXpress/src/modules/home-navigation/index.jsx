@@ -5,3 +5,6 @@
 export { default as Header } from './components/Header.jsx';
 export { default as Navbar } from './components/Navbar.jsx';
 export { default as HomePage } from './components/HomePage.jsx';
+
+// Services
+export { default as ApiService } from './services/apiService.jsx';

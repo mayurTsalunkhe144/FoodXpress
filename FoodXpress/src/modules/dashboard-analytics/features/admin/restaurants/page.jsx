@@ -40,7 +40,7 @@ function AdminRestaurants() {
   }
 
   const handleNavigateToDetails = (restaurantId) => {
-    navigate(`/admin/restaurants/${restaurantId}`, { state: { refresh: refreshKey } })
+    navigate(`/dashboard/admin/restaurants/${restaurantId}`, { state: { refresh: refreshKey } })
   }
 
   const filteredRestaurants = restaurants

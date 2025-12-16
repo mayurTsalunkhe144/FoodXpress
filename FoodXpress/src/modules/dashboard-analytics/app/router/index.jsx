@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { getUserFromStorage, isAdmin, isRestaurantOwner } from '../../utils/auth.js'
 
 // Restaurant Pages
 import RestaurantDashboard from '../../features/restaurant/dashboard/page.jsx'
@@ -22,31 +23,54 @@ import AdminUsers from '../../features/admin/users/page.jsx'
 import AdminAnalytics from '../../features/admin/analytics/page.jsx'
 
 function AppRouter() {
+  const user = getUserFromStorage()
+  
+  // If no user, check URL to determine fallback role
+  const isAdminPath = window.location.pathname.includes('/admin')
+  const fallbackUser = isAdminPath 
+    ? { userId: 1, roleId: 1, fullName: 'Demo Admin', email: 'admin@demo.com' }
+    : { userId: 2, roleId: 3, fullName: 'Demo Restaurant Owner', email: 'owner@demo.com' }
+  
+  const currentUser = user || fallbackUser
+
   return (
     <Routes>
-      {/* Restaurant Routes */}
-      <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
-      <Route path="/restaurant/orders" element={<RestaurantOrders />} />
-      <Route path="/restaurant/menu" element={<RestaurantMenu />} />
-      <Route path="/restaurant/categories" element={<RestaurantCategories />} />
-      <Route path="/restaurant/profile" element={<RestaurantProfile />} />
+      {/* Restaurant Routes - Only for Restaurant Owners */}
+      {isRestaurantOwner(currentUser) && (
+        <>
+          <Route path="/dashboard/restaurant/dashboard" element={<RestaurantDashboard />} />
+          <Route path="/dashboard/restaurant/orders" element={<RestaurantOrders />} />
+          <Route path="/dashboard/restaurant/menu" element={<RestaurantMenu />} />
+          <Route path="/dashboard/restaurant/categories" element={<RestaurantCategories />} />
+          <Route path="/dashboard/restaurant/profile" element={<RestaurantProfile />} />
+        </>
+      )}
 
-      {/* Admin Routes */}
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/pending" element={<AdminPending />} />
-      <Route path="/admin/restaurant/:id" element={<AdminRestaurantDetail />} />
-      <Route path="/admin/active" element={<AdminActive />} />
-      <Route path="/admin/rejected" element={<AdminRejected />} />
-      <Route path="/admin/restaurants" element={<AdminRestaurants />} />
-      <Route path="/admin/restaurants/:id" element={<RestaurantDetails />} />
-      <Route path="/admin/restaurants/:id/orders" element={<AdminRestaurantOrders />} />
-      <Route path="/admin/restaurants/:id/categories" element={<AdminRestaurantCategories />} />
-      <Route path="/admin/restaurants/:id/menu" element={<AdminRestaurantMenu />} />
-      <Route path="/admin/users" element={<AdminUsers />} />
-      <Route path="/admin/analytics" element={<AdminAnalytics />} />
+      {/* Admin Routes - Only for Admins */}
+      {isAdmin(currentUser) && (
+        <>
+          <Route path="/dashboard/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/dashboard/admin/pending" element={<AdminPending />} />
+          <Route path="/dashboard/admin/restaurant/:id" element={<AdminRestaurantDetail />} />
+          <Route path="/dashboard/admin/active" element={<AdminActive />} />
+          <Route path="/dashboard/admin/rejected" element={<AdminRejected />} />
+          <Route path="/dashboard/admin/restaurants" element={<AdminRestaurants />} />
+          <Route path="/dashboard/admin/restaurants/:id" element={<RestaurantDetails />} />
+          <Route path="/dashboard/admin/restaurants/:id/orders" element={<AdminRestaurantOrders />} />
+          <Route path="/dashboard/admin/restaurants/:id/categories" element={<AdminRestaurantCategories />} />
+          <Route path="/dashboard/admin/restaurants/:id/menu" element={<AdminRestaurantMenu />} />
+          <Route path="/dashboard/admin/users" element={<AdminUsers />} />
+          <Route path="/dashboard/admin/analytics" element={<AdminAnalytics />} />
+        </>
+      )}
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/restaurant/dashboard" replace />} />
+      {/* Default redirect based on role */}
+      <Route path="/dashboard" element={
+        <Navigate to={isAdmin(currentUser) ? "/dashboard/admin/dashboard" : "/dashboard/restaurant/dashboard"} replace />
+      } />
+      <Route path="/dashboard/" element={
+        <Navigate to={isAdmin(currentUser) ? "/dashboard/admin/dashboard" : "/dashboard/restaurant/dashboard"} replace />
+      } />
     </Routes>
   )
 }

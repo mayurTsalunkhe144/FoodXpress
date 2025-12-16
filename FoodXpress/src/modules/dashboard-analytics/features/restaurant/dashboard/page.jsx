@@ -7,12 +7,14 @@ import OrdersBarChart from '../../../components/charts/BarChart.jsx'
 import HorizontalBarChart from '../../../components/charts/HorizontalBarChart.jsx'
 import CircularProgress from '../../../components/charts/CircularProgress.jsx'
 import ProgressBars from '../../../components/charts/ProgressBars.jsx'
+import { getUserFromStorage } from '../../../utils/auth.js'
 
 function RestaurantDashboard() {
   const { getDashboard } = useDashboardApi()
   const [loading, setLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState(null)
-  const restaurantId = 2
+  const user = getUserFromStorage()
+  const restaurantId = user?.userId || 2 // Use user's ID as restaurant ID, fallback to 2
   const hasLoaded = useRef(false)
 
   useEffect(() => {

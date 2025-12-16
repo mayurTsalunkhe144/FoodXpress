@@ -1,8 +1,20 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ThemeContext } from '../../context/ThemeContext.jsx'
+import { getUserFromStorage, isAdmin } from '../../utils/auth.js'
 
 function Navbar({ onMenuClick }) {
   const { isDark, toggleTheme } = useContext(ThemeContext)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const navigate = useNavigate()
+  const user = getUserFromStorage() || { fullName: 'Demo User' }
+  
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    localStorage.removeItem('role')
+    localStorage.removeItem('token')
+    window.location.href = '/'
+  }
 
   return (
     <nav style={{
@@ -46,8 +58,50 @@ function Navbar({ onMenuClick }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
         </button>
-        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center">
-          <span className="text-white font-bold">A</span>
+        <div className="relative">
+          <button 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center transition-transform hover:scale-105"
+          >
+            <span className="text-white font-bold">{user.fullName?.charAt(0) || 'U'}</span>
+          </button>
+          
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg border" style={{
+              backgroundColor: 'var(--bg-secondary)',
+              borderColor: 'var(--border-color)'
+            }}>
+              <div className="p-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{user.fullName}</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
+              </div>
+              <div className="py-1">
+                <button 
+                  onClick={() => {
+                    const profilePath = isAdmin(user) ? '/dashboard/admin/profile' : '/dashboard/restaurant/profile'
+                    navigate(profilePath)
+                    setShowProfileMenu(false)
+                  }}
+                  className="w-full px-4 py-2 text-left hover:bg-opacity-50 transition-colors flex items-center gap-2"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Profile
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left hover:bg-red-500/10 transition-colors flex items-center gap-2 text-red-500"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </nav>
