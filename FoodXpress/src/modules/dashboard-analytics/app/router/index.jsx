@@ -25,13 +25,21 @@ import AdminAnalytics from '../../features/admin/analytics/page.jsx'
 function AppRouter() {
   const user = getUserFromStorage()
   
-  // If no user, check URL to determine fallback role
-  const isAdminPath = window.location.pathname.includes('/admin')
-  const fallbackUser = isAdminPath 
-    ? { userId: 1, roleId: 1, fullName: 'Demo Admin', email: 'admin@demo.com' }
-    : { userId: 2, roleId: 3, fullName: 'Demo Restaurant Owner', email: 'owner@demo.com' }
+  // Priority: localStorage user first, then fallback
+  let currentUser = user
   
-  const currentUser = user || fallbackUser
+  if (!currentUser) {
+    // Fallback only if no localStorage user
+    const isAdminPath = window.location.pathname.includes('/admin')
+    currentUser = isAdminPath 
+      ? { userId: 1, roleId: 1, fullName: 'Demo Admin', email: 'admin@demo.com' }
+      : { userId: 2, roleId: 3, fullName: 'Demo Restaurant Owner', email: 'owner@demo.com' }
+    
+    // Set fallback restaurantId for restaurant owners
+    if (!isAdminPath) {
+      localStorage.setItem('restaurantId', '2')
+    }
+  }
 
   return (
     <Routes>

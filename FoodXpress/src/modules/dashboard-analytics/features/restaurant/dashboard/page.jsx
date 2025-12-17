@@ -13,9 +13,20 @@ function RestaurantDashboard() {
   const { getDashboard } = useDashboardApi()
   const [loading, setLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState(null)
+  const [showFallbackToast, setShowFallbackToast] = useState(false)
   const user = getUserFromStorage()
-  const restaurantId = user?.userId || 2 // Use user's ID as restaurant ID, fallback to 2
+  const restaurantIdFromStorage = localStorage.getItem('restaurantId')
+  const restaurantId = restaurantIdFromStorage ? parseInt(restaurantIdFromStorage) : (user?.userId || 2)
   const hasLoaded = useRef(false)
+  
+  // Show toast if using fallback
+  useEffect(() => {
+    if (!user) {
+      setShowFallbackToast(true)
+      const timer = setTimeout(() => setShowFallbackToast(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [user])
 
   useEffect(() => {
     if (hasLoaded.current) return
@@ -63,6 +74,12 @@ function RestaurantDashboard() {
 
   return (
     <div className="space-y-8 pb-8">
+      {showFallbackToast && (
+        <div className="fixed top-20 right-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          ⚠️ Using demo data - Please login for real restaurant data
+        </div>
+      )}
+      
       <div>
         <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Restaurant Dashboard</h1>
         <p style={{ color: 'var(--text-secondary)' }}>Track your restaurant performance and analytics.</p>
