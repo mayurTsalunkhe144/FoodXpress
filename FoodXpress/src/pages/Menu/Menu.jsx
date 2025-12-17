@@ -21,6 +21,7 @@ const Menu = () => {
   const [categories, setCategories] = useState(["All"]);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageErrors, setImageErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +48,10 @@ const Menu = () => {
     ? menuItems 
     : menuItems.filter(item => item.category?.name === selectedCategory || item.category === selectedCategory);
 
+  const handleImageError = (itemId) => {
+    setImageErrors(prev => ({...prev, [itemId]: true}));
+  };
+
   return (
     <div className="menu-page">
       <div className="menu-header">
@@ -71,16 +76,23 @@ const Menu = () => {
           <Loader message="Loading menu items..." />
         ) : (
           filteredItems.map(item => (
-            <div key={item.id} className="menu-item">
+            <div key={item.menuItemId || item.id} className="menu-item">
               <div className="item-image">
-                <span className="menu-emoji">{getMenuItemEmoji(item.name)}</span>
+                {item.imageUrl && !imageErrors[item.menuItemId || item.id] ? (
+                  <img 
+                    src={item.imageUrl} 
+                    alt={item.name}
+                    onError={() => handleImageError(item.menuItemId || item.id)}
+                  />
+                ) : (
+                  <span className="menu-emoji">{getMenuItemEmoji(item.name)}</span>
+                )}
               </div>
               <div className="item-info">
                 <h3>{item.name}</h3>
                 <p className="item-description">{item.description}</p>
-                <p className="restaurant-name">{item.restaurant?.name}</p>
+                <p className="restaurant-name">{item.category?.restaurant?.name || item.restaurant?.name}</p>
                 <div className="item-details">
-                  <span className="rating">⭐ {item.rating}</span>
                   <span className="price">${item.price}</span>
                 </div>
                 <button className="add-to-cart">Add to Cart</button>

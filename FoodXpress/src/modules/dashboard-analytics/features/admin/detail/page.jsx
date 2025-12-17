@@ -85,6 +85,11 @@ function AdminRestaurantDetail() {
             Review Restaurant
           </Button>
         )}
+        {restaurant.status === 'Rejected' && (
+          <Button variant="success" onClick={handleApprove}>
+            ✓ Accept Again
+          </Button>
+        )}
       </div>
 
       <h1 className="page-title">{restaurant.restaurantName}</h1>
@@ -179,5 +184,3 @@ function AdminRestaurantDetail() {
 }
 
 export default AdminRestaurantDetail
-
-

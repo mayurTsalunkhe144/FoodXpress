@@ -1,6 +1,8 @@
 import { useState, useEffect, useContext } from 'react'
 import { useUsersApi } from './api/useUsersApi.js'
 import { mockUsers } from '../../../lib/mockData.js'
+import { Card, CardContent } from '../../../components/ui/Card.jsx'
+import StatCard from '../../../components/ui/StatCard.jsx'
 import { CacheContext } from '../../../context/CacheContext.jsx'
 
 function AdminUsers() {
@@ -9,23 +11,26 @@ function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortBy, setSortBy] = useState('name')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    const cached = getCache('users')
-    if (cached) {
-      setUsers(cached)
-      setLoading(false)
-    } else {
-      loadUsers()
-    }
-  }, [])
+    loadUsers()
+  }, [refreshKey])
 
   const loadUsers = async () => {
     try {
       setLoading(true)
+      const cached = getCache('users')
+      if (cached) {
+        setUsers(cached)
+        return
+      }
+      
       const response = await getAll()
-      const data = response.data?.data || response.data || []
-      const userData = Array.isArray(data) ? data : []
+      const data = response.data?.data
+      const userData = data?.users && Array.isArray(data.users) ? data.users : mockUsers
       setUsers(userData)
       setCache('users', userData)
     } catch (error) {
@@ -36,315 +41,196 @@ function AdminUsers() {
     }
   }
 
-  const filteredUsers = filter === 'all'
-    ? users
-    : users.filter(u => u.role?.toLowerCase() === filter.toLowerCase())
-
   const getRoleIcon = (role) => {
-    switch(role?.toLowerCase()) {
-      case 'admin': return '👑'
-      case 'restaurant': return '🏪'
-      case 'customer': return '👤'
+    switch(role) {
+      case 'Admin': return '👑'
+      case 'RestaurantOwner': return '🏪'
+      case 'Customer': return '👤'
+      case 'DeliveryBoy': return '🚚'
       default: return '👤'
     }
   }
 
-  const stats = [
-    { label: 'Admins', count: users.filter(u => u.role === 'admin').length, icon: '👑' },
-    { label: 'Restaurants', count: users.filter(u => u.role === 'restaurant').length, icon: '🏪' },
-    { label: 'Customers', count: users.filter(u => u.role === 'customer').length, icon: '👤' },
-    { label: 'Total Users', count: users.length, icon: '📊' },
-  ]
+  const filteredUsers = users
+    .filter(u => {
+      const matchesFilter = filter === 'all' || u.role === filter
+      const matchesSearch = (u.userName || u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+      return matchesFilter && matchesSearch
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return (a.userName || a.name || '').localeCompare(b.userName || b.name || '')
+      if (sortBy === 'role') return (a.role || '').localeCompare(b.role || '')
+      return 0
+    })
+
+  const stats = {
+    total: users.length,
+    admins: users.filter(u => u.role === 'Admin').length,
+    restaurants: users.filter(u => u.role === 'RestaurantOwner').length,
+    customers: users.filter(u => u.role === 'Customer').length
+  }
 
   return (
-    <div style={{backgroundColor: 'var(--bg-primary)', minHeight: '100vh', padding: 'var(--space-8)'}}>
-      <div className="container">
-        <div className="mb-8">
-          <h1 className="text-4xl text-bold text-primary mb-3">Users Management</h1>
-          <p className="text-secondary">Monitor and manage all system users</p>
-        </div>
+    <div className="space-y-8 pb-8">
+      <style>{`
+        .users-table-scroll::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .users-table-scroll::-webkit-scrollbar-track {
+          background: var(--bg-secondary);
+        }
+        .users-table-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, var(--primary-red) 0%, rgba(220, 53, 69, 0.7) 100%);
+          border-radius: 10px;
+          border: 2px solid var(--bg-secondary);
+        }
+        .users-table-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, var(--primary-red) 0%, var(--primary-red) 100%);
+        }
+      `}</style>
 
-        <div className="grid gap-6 mb-8" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'}}>
-          {stats.map((stat, idx) => (
-            <div key={idx} className="card" style={{
-              background: 'var(--bg-secondary)', 
-              border: '1px solid var(--border-color)',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <div className="text-3xl mb-2">{stat.icon}</div>
-              <p className="text-secondary text-sm mb-2">{stat.label}</p>
-              <p className="text-2xl text-bold text-primary">
-                {stat.count}
-              </p>
-            </div>
-          ))}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Users</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Manage all system users and their roles</p>
         </div>
+        <button
+          onClick={() => setRefreshKey(prev => prev + 1)}
+          className="px-4 py-2 rounded-lg font-semibold transition"
+          style={{ backgroundColor: 'var(--primary-red)', color: 'white' }}
+        >
+          🔄 Refresh
+        </button>
+      </div>
 
-        <div className="card shadow-lg">
-          <div style={{
-            padding: 'var(--space-8) var(--space-6)',
-            borderBottom: '1px solid var(--border-color)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 'var(--space-8)'
-          }}>
-            <div>
-              <h3 style={{
-                fontSize: 'var(--text-2xl)',
-                fontWeight: 'var(--font-bold)',
-                color: 'var(--text-primary)',
-                margin: 0,
-                marginBottom: 'var(--space-2)'
-              }}>All Users</h3>
-              <p style={{
-                fontSize: 'var(--text-sm)',
-                color: 'var(--text-secondary)',
-                margin: 0
-              }}>Manage and view all registered users</p>
-            </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: 'var(--space-2)'
-            }}>
-              <label style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-tertiary)',
-                fontWeight: 'var(--font-medium)'
-              }}>Filter by Role</label>
-              <select 
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                style={{
-                  padding: 'var(--space-3) var(--space-4)',
-                  backgroundColor: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-primary)',
-                  fontSize: 'var(--text-sm)',
-                  fontFamily: 'var(--font-family)',
-                  cursor: 'pointer',
-                  minWidth: '160px',
-                  boxShadow: 'var(--shadow-sm)'
-                }}
-              >
-                <option value="all">All Roles</option>
-                <option value="admin">👑 Admin</option>
-                <option value="restaurant">🏪 Restaurant</option>
-                <option value="customer">👤 Customer</option>
-              </select>
-            </div>
-          </div>
-          <div className="card-body">
-            {loading ? (
-              <div className="text-center p-8">
-                <div className="animate-spin" style={{width: '48px', height: '48px', border: '3px solid var(--border-color)', borderTop: '3px solid var(--primary-red)', borderRadius: '50%', margin: '0 auto'}}></div>
-                <p className="text-secondary mt-4">Loading users...</p>
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="text-center p-8">
-                <div className="text-4xl mb-4">👥</div>
-                <p className="text-secondary text-lg">No users found</p>
-              </div>
-            ) : (
-              <div className="overflow-auto">
-                <table style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)'
-                }}>
-                  <thead>
-                    <tr style={{
-                      borderBottom: '2px solid var(--border-color)', 
-                      backgroundColor: 'var(--gray-100)'
-                    }}>
-                      <th style={{
-                        padding: 'var(--space-4)',
-                        textAlign: 'center',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
-                        color: 'var(--text-secondary)',
-                        width: '80px'
-                      }}>#</th>
-                      <th style={{
-                        padding: 'var(--space-4)',
-                        textAlign: 'left',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
-                        color: 'var(--text-secondary)'
-                      }}>User Details</th>
-                      <th style={{
-                        padding: 'var(--space-4)',
-                        textAlign: 'left',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
-                        color: 'var(--text-secondary)'
-                      }}>Contact</th>
-                      <th style={{
-                        padding: 'var(--space-4)',
-                        textAlign: 'center',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
-                        color: 'var(--text-secondary)',
-                        width: '120px'
-                      }}>Role</th>
-                      <th style={{
-                        padding: 'var(--space-4)',
-                        textAlign: 'center',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
-                        color: 'var(--text-secondary)',
-                        width: '100px'
-                      }}>Status</th>
-                      <th style={{
-                        padding: 'var(--space-4)',
-                        textAlign: 'center',
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 'var(--font-semibold)',
-                        color: 'var(--text-secondary)',
-                        width: '120px'
-                      }}>Joined</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user, index) => (
-                      <tr key={user.userId || user.id} style={{
-                        borderBottom: '1px solid var(--border-color)',
-                        backgroundColor: 'var(--bg-secondary)',
-                        transition: 'var(--transition-normal)'
-                      }} onMouseEnter={(e) => e.target.closest('tr').style.backgroundColor = 'var(--gray-100)'} onMouseLeave={(e) => e.target.closest('tr').style.backgroundColor = 'var(--bg-secondary)'}>
-                        <td style={{
-                          padding: 'var(--space-4)',
-                          textAlign: 'center',
-                          verticalAlign: 'middle',
-                          fontFamily: 'monospace',
-                          fontSize: 'var(--text-sm)',
-                          color: 'var(--text-tertiary)',
-                          borderRight: '1px solid var(--border-color)'
-                        }}>
-                          {String(index + 1).padStart(2, '0')}
-                        </td>
-                        <td style={{
-                          padding: 'var(--space-4)',
-                          verticalAlign: 'middle',
-                          borderRight: '1px solid var(--border-color)'
-                        }}>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Users" value={stats.total} icon="👥" color="from-cyan-500 to-blue-500" />
+        <StatCard title="Admins" value={stats.admins} icon="👑" color="from-purple-500 to-pink-500" />
+        <StatCard title="Restaurants" value={stats.restaurants} icon="🏪" color="from-orange-500 to-red-500" />
+        <StatCard title="Customers" value={stats.customers} icon="👤" color="from-green-500 to-emerald-500" />
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-4 flex-wrap">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 min-w-64 px-4 py-2 rounded-lg border"
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderColor: 'var(--border-color)',
+            color: 'var(--text-primary)'
+          }}
+        />
+        <select 
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="px-4 py-2 rounded-lg border"
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderColor: 'var(--border-color)',
+            color: 'var(--text-primary)'
+          }}
+        >
+          <option value="all">All Roles</option>
+          <option value="Admin">👑 Admin</option>
+          <option value="RestaurantOwner">🏪 Restaurant</option>
+          <option value="Customer">👤 Customer</option>
+          <option value="DeliveryBoy">🚚 Delivery Boy</option>
+        </select>
+        <select 
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-4 py-2 rounded-lg border"
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            borderColor: 'var(--border-color)',
+            color: 'var(--text-primary)'
+          }}
+        >
+          <option value="name">Sort by Name</option>
+          <option value="role">Sort by Role</option>
+        </select>
+      </div>
+
+      {/* Users Table */}
+      {loading ? (
+        <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>Loading users...</div>
+      ) : (
+        <Card style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }} className="border overflow-hidden shadow-xl rounded-2xl">
+          <div className="users-table-scroll overflow-x-auto max-h-[600px]">
+            <table className="w-full">
+              <thead>
+                <tr style={{ background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(0,0,0,0.1) 100%)', borderColor: 'var(--border-color)' }} className="border-b">
+                  <th style={{ color: 'var(--text-primary)' }} className="px-8 py-5 text-left text-sm font-bold uppercase tracking-wider">#</th>
+                  <th style={{ color: 'var(--text-primary)' }} className="px-8 py-5 text-left text-sm font-bold uppercase tracking-wider">👤 User</th>
+                  <th style={{ color: 'var(--text-primary)' }} className="px-8 py-5 text-left text-sm font-bold uppercase tracking-wider">📧 Email</th>
+                  <th style={{ color: 'var(--text-primary)' }} className="px-8 py-5 text-left text-sm font-bold uppercase tracking-wider">Role</th>
+                  <th style={{ color: 'var(--text-primary)' }} className="px-8 py-5 text-left text-sm font-bold uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-8 py-16 text-center" style={{ color: 'var(--text-secondary)' }}>
+                      <p className="text-lg">No users found</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user, idx) => (
+                    <tr key={`${user.userId || user.id}-${user.email}`} style={{ borderColor: 'var(--border-color)', backgroundColor: idx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.02)' }} className="border-b hover:shadow-md transition-all duration-300">
+                      <td style={{ color: 'var(--text-secondary)' }} className="px-8 py-5 text-sm font-mono">{String(idx + 1).padStart(2, '0')}</td>
+                      <td style={{ color: 'var(--text-primary)' }} className="px-8 py-5 font-bold text-base">
+                        <div className="flex items-center gap-3">
                           <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            background: user.role === 'Admin' ? 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)' : 
+                                       user.role === 'RestaurantOwner' ? 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)' :
+                                       user.role === 'DeliveryBoy' ? 'linear-gradient(135deg, #ffc107 0%, #e0a800 100%)' :
+                                       'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)',
+                            color: 'white',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 'var(--space-3)'
+                            justifyContent: 'center',
+                            fontSize: '18px',
+                            fontWeight: 'bold'
                           }}>
-                            <div style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              background: user.role === 'admin' ? 'var(--gray-700)' : user.role === 'restaurant' ? 'var(--info)' : 'var(--success)',
-                              color: 'var(--primary-white)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: 'var(--text-base)',
-                              fontWeight: 'var(--font-bold)'
-                            }}>
-                              {(user.userName || user.name || 'U')[0].toUpperCase()}
-                            </div>
-                            <div>
-                              <div style={{
-                                fontWeight: 'var(--font-semibold)',
-                                color: 'var(--text-primary)',
-                                marginBottom: '2px'
-                              }}>{user.userName || user.name || 'Unknown'}</div>
-                              <div style={{
-                                fontSize: 'var(--text-xs)',
-                                color: 'var(--text-tertiary)'
-                              }}>ID: {user.userId || user.id || 'N/A'}</div>
-                            </div>
+                            {(user.userName || user.name || 'U')[0].toUpperCase()}
                           </div>
-                        </td>
-                        <td style={{
-                          padding: 'var(--space-4)',
-                          verticalAlign: 'middle',
-                          borderRight: '1px solid var(--border-color)'
-                        }}>
-                          <div style={{
-                            fontSize: 'var(--text-sm)',
-                            color: 'var(--text-primary)',
-                            marginBottom: '2px'
-                          }}>{user.email || 'No email'}</div>
-                          <div style={{
-                            fontSize: 'var(--text-xs)',
-                            color: 'var(--text-tertiary)'
-                          }}>{user.phone || 'No phone'}</div>
-                        </td>
-                        <td style={{
-                          padding: 'var(--space-4)',
-                          verticalAlign: 'middle',
-                          textAlign: 'center',
-                          borderRight: '1px solid var(--border-color)'
-                        }}>
-                          <span style={{
-                            padding: 'var(--space-2) var(--space-3)',
-                            borderRadius: '50px',
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 'var(--font-semibold)',
-                            backgroundColor: user.role === 'admin' ? 'var(--gray-200)' : user.role === 'restaurant' ? 'rgba(23, 162, 184, 0.1)' : 'rgba(40, 167, 69, 0.1)',
-                            color: user.role === 'admin' ? 'var(--gray-800)' : user.role === 'restaurant' ? 'var(--info)' : 'var(--success)',
-                            border: `1px solid ${user.role === 'admin' ? 'var(--gray-400)' : user.role === 'restaurant' ? 'var(--info)' : 'var(--success)'}`,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-1)'
-                          }}>
-                            <span>{getRoleIcon(user.role)}</span>
-                            <span style={{textTransform: 'capitalize'}}>{user.role || 'customer'}</span>
-                          </span>
-                        </td>
-                        <td style={{
-                          padding: 'var(--space-4)',
-                          verticalAlign: 'middle',
-                          textAlign: 'center',
-                          borderRight: '1px solid var(--border-color)'
-                        }}>
-                          <span style={{
-                            padding: 'var(--space-2) var(--space-3)',
-                            borderRadius: '50px',
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 'var(--font-medium)',
-                            backgroundColor: user.status === 'blocked' ? 'rgba(220, 53, 69, 0.1)' : user.status === 'inactive' ? 'rgba(255, 193, 7, 0.1)' : 'rgba(40, 167, 69, 0.1)',
-                            color: user.status === 'blocked' ? 'var(--error)' : user.status === 'inactive' ? 'var(--warning)' : 'var(--success)'
-                          }}>
-                            {user.status === 'blocked' ? '🚫 Blocked' :
-                             user.status === 'inactive' ? '⏸️ Inactive' :
-                             '✅ Active'}
-                          </span>
-                        </td>
-                        <td style={{
-                          padding: 'var(--space-4)',
-                          verticalAlign: 'middle',
-                          textAlign: 'center'
-                        }}>
-                          <div style={{
-                            fontSize: 'var(--text-sm)',
-                            color: 'var(--text-secondary)'
-                          }}>
-                            {user.createdDate ? new Date(user.createdDate).toLocaleDateString() : new Date().toLocaleDateString()}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                          <span>{user.userName || user.name || 'Unknown'}</span>
+                        </div>
+                      </td>
+                      <td style={{ color: 'var(--text-secondary)' }} className="px-8 py-5 text-sm">{user.email || '—'}</td>
+                      <td className="px-8 py-5">
+                        <span className={`px-4 py-2 rounded-full text-xs font-bold inline-block backdrop-blur-sm ${
+                          user.role === 'Admin' ? 'bg-gray-500/20 text-gray-400 border border-gray-500/30' :
+                          user.role === 'RestaurantOwner' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                          user.role === 'DeliveryBoy' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                          'bg-green-500/20 text-green-400 border border-green-500/30'
+                        }`}>
+                          {getRoleIcon(user.role)} {user.role || 'Customer'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-5">
+                        <span className="px-4 py-2 rounded-full text-xs font-bold inline-block bg-green-500/20 text-green-400 border border-green-500/30">
+                          ✓ Active
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
-      </div>
+        </Card>
+      )}
     </div>
   )
 }

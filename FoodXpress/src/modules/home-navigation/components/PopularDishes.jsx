@@ -25,11 +25,14 @@ const getFoodEmoji = (name) => {
 const PopularDishes = () => {
   const [popularDishes, setPopularDishes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageErrors, setImageErrors] = useState({});
 
   useEffect(() => {
     const fetchPopularDishes = async () => {
       try {
         const dishes = await ApiService.fetchPopularMenuItems();
+        console.log('Fetched dishes:', dishes);
+        dishes.forEach(d => console.log(`${d.name}: ${d.imageUrl}`));
         setPopularDishes(dishes);
       } catch (error) {
         console.error('Error loading popular dishes:', error);
@@ -40,6 +43,7 @@ const PopularDishes = () => {
 
     fetchPopularDishes();
   }, []);
+  
   const [addedItems, setAddedItems] = useState(new Set());
   const [loadingItems, setLoadingItems] = useState(new Set());
 
@@ -56,6 +60,11 @@ const PopularDishes = () => {
     }, 500);
   };
 
+  const handleImageError = (dishId) => {
+    console.log(`Image failed to load for dish ${dishId}`);
+    setImageErrors(prev => ({...prev, [dishId]: true}));
+  };
+
   return (
     <section className="popular-dishes">
       <h2 className="popular-title">Popular Dishes</h2>
@@ -67,7 +76,18 @@ const PopularDishes = () => {
           popularDishes.map((dish) => (
           <div key={dish.menuItemId} className="dish-card">
             <div className="dish-image">
-              <span className="dish-emoji">{getFoodEmoji(dish.name)}</span>
+              {dish.imageUrl && !imageErrors[dish.menuItemId] ? (
+                <img 
+                  src={dish.imageUrl} 
+                  alt={dish.name}
+                  crossOrigin="anonymous"
+                  onError={() => handleImageError(dish.menuItemId)}
+                />
+              ) : (
+                <div className="dish-emoji-placeholder">
+                  <span className="dish-emoji">{getFoodEmoji(dish.name)}</span>
+                </div>
+              )}
             </div>
             
             <div className="dish-info">

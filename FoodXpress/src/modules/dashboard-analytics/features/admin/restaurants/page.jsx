@@ -65,6 +65,24 @@ function AdminRestaurants() {
 
   return (
     <div className="space-y-8 pb-8">
+      <style>{`
+        .restaurants-table-scroll::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .restaurants-table-scroll::-webkit-scrollbar-track {
+          background: var(--bg-secondary);
+        }
+        .restaurants-table-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, var(--primary-red) 0%, rgba(220, 53, 69, 0.7) 100%);
+          border-radius: 10px;
+          border: 2px solid var(--bg-secondary);
+        }
+        .restaurants-table-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, var(--primary-red) 0%, var(--primary-red) 100%);
+        }
+      `}</style>
+
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Restaurants</h1>
@@ -137,7 +155,7 @@ function AdminRestaurants() {
         <div className="text-center py-12" style={{ color: 'var(--text-secondary)' }}>Loading restaurants...</div>
       ) : (
         <Card style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }} className="border overflow-hidden shadow-xl rounded-2xl">
-          <div className="overflow-x-auto">
+          <div className="restaurants-table-scroll overflow-x-auto max-h-[600px]">
             <table className="w-full">
               <thead>
                 <tr style={{ background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(0,0,0,0.1) 100%)', borderColor: 'var(--border-color)' }} className="border-b">
