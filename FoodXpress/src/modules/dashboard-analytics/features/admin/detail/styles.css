@@ -1,0 +1,109 @@
+.detail-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--muted);
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.detail-value {
+  color: var(--text);
+  text-align: right;
+}
+
+.detail-description {
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.rejection-reason {
+  color: var(--danger);
+  padding: 1rem;
+  background-color: var(--bg);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--danger);
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text);
+}
+
+.approval-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-text {
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.form-textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--primary);
+  border-color: transparent;
+}
+
+

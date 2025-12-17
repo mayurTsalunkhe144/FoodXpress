@@ -1,0 +1,24 @@
+.rejected-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text);
+}
+
+.rejection-reason-text {
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+

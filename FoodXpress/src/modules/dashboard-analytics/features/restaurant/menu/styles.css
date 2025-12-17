@@ -1,0 +1,99 @@
+.menu-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text);
+}
+
+.menu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.form-textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--primary);
+  border-color: transparent;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--surface);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+}
+
+.form-select:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--primary);
+  border-color: transparent;
+}
+
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.form-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+
