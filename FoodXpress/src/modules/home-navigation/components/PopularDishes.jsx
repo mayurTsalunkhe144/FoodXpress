@@ -46,26 +46,23 @@ const PopularDishes = () => {
           <Loader message="Loading popular dishes..." />
         ) : (
           popularDishes.map((dish) => (
-          <div key={dish.id} className="dish-card">
+          <div key={dish.menuItemId} className="dish-card">
             <div className="dish-image">
-              <img src={dish.image} alt={dish.name} />
-              <div className="dish-rating">
-                <span>⭐ {dish.rating}</span>
-              </div>
+              <img src={dish.imageUrl || '/NavLogo.png'} alt={dish.name} />
             </div>
             
             <div className="dish-info">
               <h3>{dish.name}</h3>
-              <p className="dish-restaurant">{dish.restaurant}</p>
-              <p className="dish-description">{dish.description}</p>
+              <p className="dish-restaurant">{dish.category?.restaurant?.name || 'Restaurant'}</p>
+              <p className="dish-description">{dish.description || 'No description available'}</p>
               <div className="dish-footer">
                 <span className="dish-price">${dish.price}</span>
                 <button 
-                  className={`add-btn ${addedItems.has(dish.id) ? 'added' : ''} ${loadingItems.has(dish.id) ? 'loading' : ''}`}
-                  onClick={() => handleAddToCart(dish.id)}
-                  disabled={loadingItems.has(dish.id) || addedItems.has(dish.id)}
+                  className={`add-btn ${addedItems.has(dish.menuItemId) ? 'added' : ''} ${loadingItems.has(dish.menuItemId) ? 'loading' : ''}`}
+                  onClick={() => handleAddToCart(dish.menuItemId)}
+                  disabled={loadingItems.has(dish.menuItemId) || addedItems.has(dish.menuItemId) || !dish.isAvailable}
                 >
-                  {addedItems.has(dish.id) ? 'Added' : loadingItems.has(dish.id) ? 'Adding...' : 'Add to Cart'}
+                  {!dish.isAvailable ? 'Unavailable' : addedItems.has(dish.menuItemId) ? 'Added' : loadingItems.has(dish.menuItemId) ? 'Adding...' : 'Add to Cart'}
                 </button>
               </div>
             </div>

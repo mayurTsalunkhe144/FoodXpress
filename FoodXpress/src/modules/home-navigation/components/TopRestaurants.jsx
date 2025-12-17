@@ -31,17 +31,17 @@ const TopRestaurants = () => {
           <Loader message="Loading restaurants..." />
         ) : (
           restaurants.map((restaurant) => (
-            <div key={restaurant.id} className="restaurant-card">
+            <div key={restaurant.restaurantId} className="restaurant-card">
               <div className="restaurant-image">
-                <img src={restaurant.image || '/NavLogo.png'} alt={restaurant.name} />
+                <img src='/NavLogo.png' alt={restaurant.name} />
               </div>
               <div className="restaurant-info">
                 <h3>{restaurant.name}</h3>
-                <p className="description">{restaurant.description}</p>
-                <p className="address">{restaurant.address}</p>
+                <p className="description">{restaurant.description || 'No description available'}</p>
+                <p className="address">{restaurant.address || 'Address not available'}</p>
                 <div className="restaurant-details">
-                  <span className="rating">⭐ {restaurant.rating}</span>
-                  <span className="phone">📞 {restaurant.phone}</span>
+                  <span className="status">Status: {restaurant.status}</span>
+                  <span className="created">Since: {new Date(restaurant.createdAt).getFullYear()}</span>
                 </div>
               </div>
             </div>

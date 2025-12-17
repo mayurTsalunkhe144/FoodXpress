@@ -25,7 +25,7 @@ const Restaurants = () => {
 
   const handleRestaurantClick = async (restaurant) => {
     try {
-      const fullRestaurant = await ApiService.fetchRestaurant(restaurant.id);
+      const fullRestaurant = await ApiService.fetchRestaurant(restaurant.restaurantId);
       setSelectedRestaurant(fullRestaurant);
     } catch (error) {
       console.error('Error loading restaurant details:', error);
@@ -44,36 +44,45 @@ const Restaurants = () => {
         </button>
         <div className="restaurant-header">
           <div className="restaurant-icon">
-            <img src={selectedRestaurant.image || '/NavLogo.png'} alt={selectedRestaurant.name} />
+            <img src='/NavLogo.png' alt={selectedRestaurant.name} />
           </div>
           <div className="restaurant-details">
             <h1>{selectedRestaurant.name}</h1>
-            <p>⭐ {selectedRestaurant.rating} • 📍 {selectedRestaurant.address}</p>
-            <p>{selectedRestaurant.description}</p>
+            <p>📍 {selectedRestaurant.address || 'Address not available'}</p>
+            <p>{selectedRestaurant.description || 'No description available'}</p>
+            <p>Status: {selectedRestaurant.status}</p>
           </div>
         </div>
         
-        <div className="menu-items">
-          <h2>Menu Items</h2>
-          <div className="menu-grid">
-            {selectedRestaurant.menuItems?.map(item => (
-              <div key={item.id} className="menu-item">
-                <div className="item-image">
-                  <img src={item.image} alt={item.name} />
-                </div>
-                <div className="item-info">
-                  <h3>{item.name}</h3>
-                  <p className="item-description">{item.description}</p>
-                  <p className="item-category">{item.category}</p>
-                  <div className="item-details">
-                    <span className="rating">⭐ {item.rating}</span>
-                    <span className="price">${item.price}</span>
+        <div className="menu-categories">
+          <h2>Menu Categories</h2>
+          {selectedRestaurant.menuCategories?.map(category => (
+            <div key={category.categoryId} className="category-section">
+              <h3>{category.name}</h3>
+              <div className="menu-grid">
+                {category.menuItems?.map(item => (
+                  <div key={item.menuItemId} className="menu-item">
+                    <div className="item-image">
+                      <img src={item.imageUrl || '/NavLogo.png'} alt={item.name} />
+                    </div>
+                    <div className="item-info">
+                      <h4>{item.name}</h4>
+                      <p className="item-description">{item.description || 'No description'}</p>
+                      <div className="item-details">
+                        <span className="price">${item.price}</span>
+                        <span className={`availability ${item.isAvailable ? 'available' : 'unavailable'}`}>
+                          {item.isAvailable ? 'Available' : 'Unavailable'}
+                        </span>
+                      </div>
+                      <button className="add-btn" disabled={!item.isAvailable}>
+                        {item.isAvailable ? 'Add to Cart' : 'Unavailable'}
+                      </button>
+                    </div>
                   </div>
-                  <button className="add-btn">Add to Cart</button>
-                </div>
+                )) || <p>No items in this category</p>}
               </div>
-            )) || <p>No menu items available</p>}
-          </div>
+            </div>
+          )) || <p>No menu categories available</p>}
         </div>
       </div>
     );
@@ -92,19 +101,19 @@ const Restaurants = () => {
         ) : (
           restaurants.map(restaurant => (
             <div 
-              key={restaurant.id} 
+              key={restaurant.restaurantId} 
               className="restaurant-card"
               onClick={() => handleRestaurantClick(restaurant)}
             >
               <div className="restaurant-image">
-                <img src={restaurant.image || '/NavLogo.png'} alt={restaurant.name} />
+                <img src='/NavLogo.png' alt={restaurant.name} />
               </div>
               <div className="restaurant-info">
                 <h3>{restaurant.name}</h3>
-                <p className="description">{restaurant.description}</p>
+                <p className="description">{restaurant.description || 'No description available'}</p>
                 <div className="restaurant-meta">
-                  <span className="rating">⭐ {restaurant.rating}</span>
-                  <span className="phone">📞 {restaurant.phone}</span>
+                  <span className="status">Status: {restaurant.status}</span>
+                  <span className="address">{restaurant.address || 'Address not available'}</span>
                 </div>
               </div>
             </div>
