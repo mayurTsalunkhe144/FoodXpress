@@ -1,5 +1,5 @@
-const HOME_API_BASE_URL = 'http://localhost:5142/api';
-const REMOTE_API_BASE_URL = 'http://cartcheckoutapi.runasp.net/api';
+const HOME_API_BASE_URL = 'https://cartcheckoutorder-backend-2.onrender.com/api';
+// const REMOTE_API_BASE_URL = 'http://cartcheckoutapi.runasp.net/api';
 
 class CartSyncService {
   getAuthHeaders() {

@@ -1,4 +1,4 @@
-const LOCAL_API_BASE_URL = 'https://localhost:52790/api';
+const LOCAL_API_BASE_URL = 'https://cartcheckoutorder-backend-2.onrender.com/api';
 const API_BASE_URL = window.__API_BASE_URL__ || LOCAL_API_BASE_URL;
 
 const getHeaders = (token) => {
