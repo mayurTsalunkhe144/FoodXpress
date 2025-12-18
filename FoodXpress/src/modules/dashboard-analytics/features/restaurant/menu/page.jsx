@@ -15,7 +15,7 @@ function RestaurantMenu() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
-  const restaurantId = 2
+  const restaurantId =localStorage.getItem('restaurantId') ? parseInt(localStorage.getItem('restaurantId')) : 2
   const hasLoaded = useRef(false)
 
   useEffect(() => {

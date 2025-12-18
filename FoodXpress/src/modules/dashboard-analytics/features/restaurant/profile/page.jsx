@@ -7,7 +7,7 @@ function RestaurantProfile() {
   const { getProfile, updateProfile, updateStatus } = useProfileApi()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const restaurantId = 2
+  const restaurantId = localStorage.getItem('restaurantId') ? parseInt(localStorage.getItem('restaurantId')) : 2
   const hasLoaded = useRef(false)
 
   useEffect(() => {
@@ -24,6 +24,12 @@ function RestaurantProfile() {
       const data = response.data?.data || response.data
       console.log('Profile data:', data)
       setProfile(data)
+      if (data?.name) {
+        localStorage.setItem('restaurantName', data.name)
+      }
+      if (data?.email) {
+        localStorage.setItem('restaurantEmail', data.email)
+      }
     } catch (error) {
       console.error('Failed to load profile:', error)
       setProfile(null)

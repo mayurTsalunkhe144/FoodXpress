@@ -2,10 +2,10 @@ import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
   const menuItems = [
-    { path: '/user/orders', label: 'Previous Orders', icon: '📦' },
-    { path: '/user/edit', label: 'Edit Profile', icon: '👤' },
-    { path: '/user/addresses', label: 'Address', icon: '📍' },
-    { path: '/user/settings', label: 'Settings', icon: '⚙️' }
+    { path: '/user-management/orders', label: 'Previous Orders', icon: '📦' },
+    { path: '/user-management/edit', label: 'Edit Profile', icon: '👤' },
+    { path: '/user-management/addresses', label: 'Address', icon: '📍' },
+    { path: '/user-management/settings', label: 'Settings', icon: '⚙️' }
   ];
 
   return (

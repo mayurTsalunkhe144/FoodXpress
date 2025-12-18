@@ -16,7 +16,7 @@ const OrdersHistoryPage = () => {
     setLoading(true);
     try {
       const response = await orderApi.getMyOrders();
-      setOrders(response.data || response);
+      setOrders(Array.isArray(response) ? response : response.data || []);
     } catch (err) {
       console.error('Error fetching orders:', err);
       setOrders([]);

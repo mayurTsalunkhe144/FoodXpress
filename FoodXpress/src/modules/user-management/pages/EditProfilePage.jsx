@@ -1,23 +1,36 @@
 import { useState, useEffect } from 'react';
-import { getUserProfile, updateUserProfile } from '../api/userService';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { updateUserProfile } from '../api/userService';
 
 const EditProfilePage = () => {
+  const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: '',
+    fullName: '',
     email: '',
-    mobile: ''
+    phone: '',
+    address: '',
+    description: '',
+    password: ''
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getUserProfile().then(response => setProfile(response.data));
-  }, []);
+    if (user) {
+      setProfile({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        description: user.description || '',
+        password: ''
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Validate mobile number - only allow digits and max 10 characters
-    if (name === 'mobile') {
+    if (name === 'phone') {
       const digitsOnly = value.replace(/\D/g, '');
       if (digitsOnly.length <= 10) {
         setProfile(prev => ({ ...prev, [name]: digitsOnly }));
@@ -27,13 +40,19 @@ const EditProfilePage = () => {
     }
   };
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await updateUserProfile(profile);
+      const updateData = {
+        fullName: profile.fullName,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address || 'N/A',
+        description: profile.description || 'N/A',
+        password: profile.password || 'DefaultPassword123'
+      };
+      await updateUserProfile(updateData);
       alert('Profile updated successfully!');
     } catch (error) {
       alert('Failed to update profile');
@@ -48,15 +67,13 @@ const EditProfilePage = () => {
       
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8">
         <form onSubmit={handleSubmit}>
-
-
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
               <input
                 type="text"
-                name="name"
-                value={profile.name}
+                name="fullName"
+                value={profile.fullName}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                 required
@@ -76,11 +93,11 @@ const EditProfilePage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Mobile Number</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
               <input
                 type="tel"
-                name="mobile"
-                value={profile.mobile}
+                name="phone"
+                value={profile.phone}
                 onChange={handleInputChange}
                 placeholder="Enter 10-digit mobile number"
                 pattern="[0-9]{10}"
@@ -88,9 +105,31 @@ const EditProfilePage = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
                 required
               />
-              {profile.mobile && profile.mobile.length !== 10 && (
-                <p className="text-red-500 text-sm mt-1">Mobile number must be exactly 10 digits</p>
+              {profile.phone && profile.phone.length !== 10 && (
+                <p className="text-red-500 text-sm mt-1">Phone number must be exactly 10 digits</p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+              <textarea
+                name="address"
+                value={profile.address}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+              <textarea
+                name="description"
+                value={profile.description}
+                onChange={handleInputChange}
+                rows={2}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
+              />
             </div>
           </div>
 

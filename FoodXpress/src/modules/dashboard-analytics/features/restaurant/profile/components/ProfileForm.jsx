@@ -9,6 +9,8 @@ function ProfileForm({ profile, onSubmit, onStatusToggle }) {
     cuisineType: '',
     description: '',
     address: '',
+    cityId: 0,
+    stateId: 0,
   })
 
   useEffect(() => {
@@ -20,6 +22,8 @@ function ProfileForm({ profile, onSubmit, onStatusToggle }) {
         cuisineType: profile.cuisineType || '',
         description: profile.description || '',
         address: profile.address || '',
+        cityId: profile.cityId || 0,
+        stateId: profile.stateId || 0,
       })
     }
   }, [profile])
@@ -33,11 +37,21 @@ function ProfileForm({ profile, onSubmit, onStatusToggle }) {
       cuisineType: formData.cuisineType,
       description: formData.description,
       address: formData.address,
+      cityId: formData.cityId,
+      stateId: formData.stateId,
     })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Status Warning */}
+      {profile?.isActive !== 'Approved' && (
+        <div className="p-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
+          <p className="text-yellow-300 font-semibold">⏳ Restaurant Not Active</p>
+          <p className="text-yellow-200 text-sm mt-1">Your restaurant is waiting for admin approval. Current status: <span className="font-bold">{profile?.isActive}</span></p>
+        </div>
+      )}
+
       {/* Basic Info Section */}
       <div>
         <h3 className="text-lg font-bold text-cyan-300 mb-6 pb-4 border-b border-slate-700">🏪 Basic Information</h3>
@@ -105,14 +119,14 @@ function ProfileForm({ profile, onSubmit, onStatusToggle }) {
         />
       </div>
 
-      {/* Status Section */}
-      {profile && (
+      {/* Status Section - Only show if Approved */}
+      {profile && profile.isActive === 'Approved' && (
         <div>
-          <h3 className="text-lg font-bold text-yellow-300 mb-6 pb-4 border-b border-slate-700">⚙️ Status</h3>
+          <h3 className="text-lg font-bold text-yellow-300 mb-6 pb-4 border-b border-slate-700">Status</h3>
           <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-slate-800/50 to-slate-900/50 rounded-lg border border-slate-700">
             <input
               type="checkbox"
-              checked={profile.isActive}
+              checked={profile.isActive === 'Approved'}
               onChange={(e) => onStatusToggle(e.target.checked)}
               className="w-5 h-5 rounded border-slate-600 bg-slate-800 cursor-pointer"
             />

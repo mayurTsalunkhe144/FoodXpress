@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { checkoutApi, addressApi } from '../services/orderService.jsx';
+import { checkoutApi, locationApi } from '../services/orderService.jsx';
 import '../styles/shared.css';
 
 const CheckoutPage = () => {
@@ -8,35 +8,60 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showNewAddress, setShowNewAddress] = useState(false);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
   const [newAddress, setNewAddress] = useState({
     addressLine: '',
-    city: '',
     state: '',
-    pinCode: '',
-    type: 'Home',
-    setAsDefault: false
+    city: '',
+    pinCode: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('CashOnDelivery');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCheckoutSummary();
+    fetchStates();
   }, []);
+
+  useEffect(() => {
+    if (newAddress.state) {
+      fetchCities(newAddress.state);
+      setNewAddress(prev => ({...prev, city: ''}));
+    }
+  }, [newAddress.state]);
 
   const fetchCheckoutSummary = async () => {
     setLoading(true);
     try {
       const response = await checkoutApi.getSummary();
-      const data = response?.data || response;
-      setCheckout(data);
-      if (data?.defaultAddress) {
-        setSelectedAddress(data.defaultAddress.addressId);
+      setCheckout(response);
+      if (response?.defaultAddress?.addressId) {
+        setSelectedAddress(response.defaultAddress.addressId);
       }
     } catch (err) {
-      console.error('Error fetching checkout:', err);
-      setCheckout(null);
+      console.error('Error fetching checkout summary:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStates = async () => {
+    try {
+      const response = await locationApi.getStates();
+      setStates(response);
+    } catch (err) {
+      console.error('Error fetching states:', err);
+    }
+  };
+
+  const fetchCities = async (stateId) => {
+    try {
+      const response = await locationApi.getCitiesByState(stateId);
+      setCities(response);
+    } catch (err) {
+      console.error('Error fetching cities:', err);
+      setCities([]);
     }
   };
 
@@ -46,133 +71,188 @@ const CheckoutPage = () => {
       return;
     }
 
-    const request = {
-      addressId: showNewAddress ? undefined : selectedAddress || undefined,
-      newAddress: showNewAddress ? newAddress : undefined,
-      paymentMethod,
-      saveAddress: showNewAddress
-    };
-
     try {
-      const response = await checkoutApi.placeOrder(request);
-      navigate(`/order-status/${response.data.orderId}`);
+      const response = await checkoutApi.placeOrder({
+        addressId: selectedAddress,
+        newAddress: showNewAddress ? newAddress : undefined,
+        paymentMethod
+      });
+      console.log('Checkout response:', response);
+      const orderId = response?.orderId || response?.data?.orderId;
+      console.log('Order ID:', orderId);
+      if (orderId) {
+        navigate(`/order-tracking/${orderId}`);
+      } else {
+        alert('Order created but no order ID returned');
+      }
     } catch (err) {
       console.error('Error placing order:', err);
       alert('Failed to place order. Please try again.');
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
-  if (!checkout) return <div>Error loading checkout</div>;
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading checkout...</div>;
+  if (!checkout) return <div style={{ padding: '40px', textAlign: 'center' }}>Error loading checkout.</div>;
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px',
+    marginBottom: '12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    boxSizing: 'border-box',
+    backgroundColor: '#ffffff',
+    color: '#000000'
+  };
+
+  const formContainerStyle = {
+    backgroundColor: '#f9f9f9',
+    padding: '20px',
+    borderRadius: '8px',
+    marginTop: '15px',
+    border: '1px solid #e0e0e0'
+  };
+
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px'
+  };
 
   return (
     <div className="checkout-page">
       <div className="container">
-        <div className="page-header">
-          <h1>Checkout</h1>
-        </div>
+        <h1>Checkout</h1>
 
-        <div className="order-items">
-          <h2>Your Order</h2>
-          {checkout.restaurants?.map((restaurant) => (
-            <div key={restaurant.restaurantId} className="restaurant-section">
-              <h3>{restaurant.restaurantName}</h3>
-              {restaurant.items?.map((item) => (
-                <div key={item.cartItemId} className="order-item card p-md m-sm">
-                  <div className="item-info">
-                    <span className="item-name">{item.menuItemName}</span>
-                    <span className="item-restaurant">from {item.restaurantName}</span>
-                  </div>
-                  <div className="item-details">
-                    <span>Qty: {item.quantity}</span>
-                    <span>₹{item.lineTotal}</span>
-                  </div>
+        <div style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc' }}>
+          <h2>Delivery Address</h2>
+          {checkout.savedAddresses?.length > 0 ? (
+            <>
+              {checkout.savedAddresses.map((addr) => (
+                <div key={addr.addressId} style={{ marginBottom: '10px' }}>
+                  <label>
+                    <input
+                      type="radio"
+                      name="address"
+                      checked={selectedAddress === addr.addressId}
+                      onChange={() => {
+                        setSelectedAddress(addr.addressId);
+                        setShowNewAddress(false);
+                      }}
+                    />
+                    {addr.addressLine}, {addr.city}, {addr.state} - {addr.pinCode}
+                  </label>
                 </div>
               ))}
-            </div>
-          ))}
-        </div>
-
-        <div className="address-section">
-          <h2>Delivery Address</h2>
-          <div className="address-option">
-            <input
-              type="radio"
-              name="address"
-              checked={showNewAddress}
-              onChange={() => setShowNewAddress(true)}
-            />
-            <span>Add New Address</span>
+            </>
+          ) : (
+            <p>No saved addresses</p>
+          )}
+          
+          <div style={{ marginTop: '15px' }}>
+            <label>
+              <input
+                type="radio"
+                name="address"
+                checked={showNewAddress}
+                onChange={() => setShowNewAddress(true)}
+              />
+              Add New Address
+            </label>
           </div>
 
           {showNewAddress && (
-            <div className="new-address-form">
-              <input
-                type="text"
-                placeholder="Address Line"
-                value={newAddress.addressLine}
-                onChange={(e) => setNewAddress({...newAddress, addressLine: e.target.value})}
-                className="p-sm m-xs rounded-md"
-              />
-              <input
-                type="text"
-                placeholder="City"
-                value={newAddress.city}
-                onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
-                className="p-sm m-xs rounded-md"
-              />
-              <input
-                type="text"
-                placeholder="State"
-                value={newAddress.state}
-                onChange={(e) => setNewAddress({...newAddress, state: e.target.value})}
-                className="p-sm m-xs rounded-md"
-              />
-              <input
-                type="text"
-                placeholder="Pin Code"
-                value={newAddress.pinCode}
-                onChange={(e) => setNewAddress({...newAddress, pinCode: e.target.value})}
-                className="p-sm m-xs rounded-md"
-              />
+            <div style={formContainerStyle}>
+              <div style={gridStyle}>
+                <input
+                  type="text"
+                  placeholder="Address Line"
+                  value={newAddress.addressLine}
+                  onChange={(e) => setNewAddress({...newAddress, addressLine: e.target.value})}
+                  style={{...inputStyle, gridColumn: '1 / -1'}}
+                />
+                <select
+                  value={newAddress.state}
+                  onChange={(e) => setNewAddress({...newAddress, state: e.target.value})}
+                  style={inputStyle}
+                >
+                  <option value="">Select State</option>
+                  {states.map((state) => (
+                    <option key={state.stateId} value={state.stateId}>
+                      {state.stateName}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={newAddress.city}
+                  onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
+                  style={inputStyle}
+                  disabled={!newAddress.state}
+                >
+                  <option value="">Select City</option>
+                  {cities.map((city) => (
+                    <option key={city.cityId} value={city.cityId}>
+                      {city.cityName}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  placeholder="Pin Code"
+                  value={newAddress.pinCode}
+                  onChange={(e) => setNewAddress({...newAddress, pinCode: e.target.value})}
+                  style={inputStyle}
+                />
+              </div>
             </div>
           )}
         </div>
 
-        <div className="payment-section">
+        <div style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc' }}>
           <h2>Payment Method</h2>
-          <div className="payment-option">
-            <input
-              type="radio"
-              name="payment"
-              value="CashOnDelivery"
-              checked={paymentMethod === 'CashOnDelivery'}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            />
-            <span>💵 Cash on Delivery</span>
-          </div>
+          {checkout.paymentOptions?.map((option) => (
+            <div key={option.method} style={{ marginBottom: '10px' }}>
+              <label>
+                <input
+                  type="radio"
+                  name="payment"
+                  value={option.method}
+                  checked={paymentMethod === option.method}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                {option.icon} {option.displayName}
+              </label>
+            </div>
+          ))}
         </div>
 
-        <div className="order-summary card p-lg">
+        <div style={{ marginTop: '30px', padding: '20px', border: '1px solid #ccc' }}>
           <h2>Order Summary</h2>
-          <div className="summary-line">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
             <span>Subtotal:</span>
             <span>₹{checkout.subTotal?.toFixed(2) || '0.00'}</span>
           </div>
-          <div className="summary-line">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
             <span>Delivery:</span>
             <span>₹{checkout.deliveryFee?.toFixed(2) || '0.00'}</span>
           </div>
-          <div className="summary-line">
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
             <span>Tax:</span>
             <span>₹{checkout.taxAmount?.toFixed(2) || '0.00'}</span>
           </div>
-          <div className="summary-line total">
+          {checkout.discountAmount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span>Discount:</span>
+              <span>-₹{checkout.discountAmount?.toFixed(2)}</span>
+            </div>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
             <span>Total:</span>
             <span>₹{checkout.totalAmount?.toFixed(2) || '0.00'}</span>
           </div>
           
-          <button onClick={handlePlaceOrder} className="btn btn-primary">
+          <button onClick={handlePlaceOrder} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', width: '100%' }}>
             Place Order
           </button>
         </div>

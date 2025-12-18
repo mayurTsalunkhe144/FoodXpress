@@ -1,29 +1,23 @@
 import { useState, useEffect } from 'react';
-import { getUserProfile } from '../../api/userService';
+import { useAuth } from '../../../auth/hooks/useAuth';
 
 const ProfileHeader = () => {
+  const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    mobile: '+91 9876543210',
-    email: 'john.doe@example.com'
+    name: '',
+    mobile: '',
+    email: ''
   });
 
   useEffect(() => {
-    getUserProfile()
-      .then(response => {
-        console.log('Profile API response:', response.data);
-        // Handle nested API response structure
-        const profileData = response.data.data || response.data;
-        if (profileData && profileData.name) {
-          setProfile(profileData);
-        } else {
-          console.log('API returned empty data, keeping fallback');
-        }
-      })
-      .catch(error => {
-        console.log('API failed, using fallback profile data:', error);
+    if (user) {
+      setProfile({
+        name: user.fullName || 'User',
+        mobile: user.phone || 'N/A',
+        email: user.email || 'N/A'
       });
-  }, []);
+    }
+  }, [user]);
 
   return (
     <div style={{background: 'linear-gradient(to right, #ff4d4d, #e53e3e)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000}} className="text-white w-full">

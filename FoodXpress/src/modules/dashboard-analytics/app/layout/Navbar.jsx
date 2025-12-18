@@ -1,18 +1,35 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ThemeContext } from '../../context/ThemeContext.jsx'
-import { getUserFromStorage, isAdmin } from '../../utils/auth.js'
+import { getUserFromStorage, isAdmin, isRestaurantOwner } from '../../utils/auth.js'
 
 function Navbar({ onMenuClick }) {
   const { isDark, toggleTheme } = useContext(ThemeContext)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [displayName, setDisplayName] = useState('')
+  const [displayEmail, setDisplayEmail] = useState('')
   const navigate = useNavigate()
-  const user = getUserFromStorage() || { fullName: 'Demo User' }
+  const user = getUserFromStorage()
+  
+  useEffect(() => {
+    if (isRestaurantOwner(user)) {
+      const name = localStorage.getItem('restaurantName')
+      const email = localStorage.getItem('restaurantEmail')
+      if (name) setDisplayName(name)
+      if (email) setDisplayEmail(email)
+    } else if (user) {
+      setDisplayName(user.fullName || 'User')
+      setDisplayEmail(user.email || '')
+    }
+  }, [user])
   
   const handleLogout = () => {
     localStorage.removeItem('user')
     localStorage.removeItem('role')
     localStorage.removeItem('token')
+    localStorage.removeItem('restaurantId')
+    localStorage.removeItem('restaurantName')
+    localStorage.removeItem('restaurantEmail')
     window.location.href = '/'
   }
 
@@ -63,7 +80,7 @@ function Navbar({ onMenuClick }) {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 flex items-center justify-center transition-transform hover:scale-105"
           >
-            <span className="text-white font-bold">{user.fullName?.charAt(0) || 'U'}</span>
+            <span className="text-white font-bold">{displayName?.charAt(0) || 'U'}</span>
           </button>
           
           {showProfileMenu && (
@@ -72,8 +89,8 @@ function Navbar({ onMenuClick }) {
               borderColor: 'var(--border-color)'
             }}>
               <div className="p-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
-                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{user.fullName}</p>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{displayName || 'User'}</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{displayEmail || 'user@example.com'}</p>
               </div>
               <div className="py-1">
                 <button 

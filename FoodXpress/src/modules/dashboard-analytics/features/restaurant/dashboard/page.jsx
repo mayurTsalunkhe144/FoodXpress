@@ -16,7 +16,7 @@ function RestaurantDashboard() {
   const [showFallbackToast, setShowFallbackToast] = useState(false)
   const user = getUserFromStorage()
   const restaurantIdFromStorage = localStorage.getItem('restaurantId')
-  const restaurantId = restaurantIdFromStorage ? parseInt(restaurantIdFromStorage) : (user?.userId || 2)
+  const restaurantId = restaurantIdFromStorage ? parseInt(restaurantIdFromStorage) : user?.userId
   const hasLoaded = useRef(false)
   
   // Show toast if using fallback
@@ -31,11 +31,13 @@ function RestaurantDashboard() {
   useEffect(() => {
     if (hasLoaded.current) return
     hasLoaded.current = true
+    console.log('Loading dashboard for restaurantId:', restaurantId)
     loadDashboard()
   }, [])
 
   const loadDashboard = async () => {
     try {
+      console.log('Fetching dashboard data for restaurantId:', restaurantId)
       const response = await getDashboard(restaurantId)
       const data = response.data?.data || response.data || {}
       
@@ -82,7 +84,7 @@ function RestaurantDashboard() {
       
       <div>
         <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Restaurant Dashboard</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Track your restaurant performance and analytics.</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Track your restaurant performance and analytics. (Restaurant ID: {restaurantId})</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

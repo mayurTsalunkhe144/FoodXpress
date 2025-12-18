@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { getUserSettings, updateUserSettings } from '../api/userService';
 
 const SettingsPage = () => {
+  const { user } = useAuth();
   const [settings, setSettings] = useState({
     notifications: true,
     emailUpdates: false,
@@ -8,17 +11,49 @@ const SettingsPage = () => {
     orderUpdates: true,
     promotions: false
   });
+  const [loading, setLoading] = useState(true);
 
-  const handleToggle = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  useEffect(() => {
+    if (user) {
+      loadSettings();
+    }
+  }, [user]);
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+      const response = await getUserSettings();
+      if (response.data) {
+        setSettings(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleToggle = async (key) => {
+    const newSettings = { ...settings, [key]: !settings[key] };
+    setSettings(newSettings);
+    
+    try {
+      await updateUserSettings(newSettings);
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      setSettings(settings);
+    }
+  };
+
+  if (loading) {
+    return <div className="w-full p-8 text-center">Loading settings...</div>;
+  }
 
   return (
     <div className="w-full p-8 font-outfit">
       <h2 className="text-3xl font-bold text-gray-900 mb-8">Settings</h2>
       
       <div className="space-y-6">
-        {/* Notifications Section */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Notifications</h3>
           <div className="space-y-4">
@@ -81,7 +116,6 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Privacy Section */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Privacy & Marketing</h3>
           <div className="space-y-4">
@@ -125,7 +159,6 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Account Actions */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Account</h3>
           <div className="space-y-3">

@@ -1,24 +1,25 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { getUserOrders } from '../api/userService';
-import OrderCard from '../components/profile/OrderCard';
 import Loader from '../components/ui/Loader';
 
 const OrdersPage = () => {
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    loadOrders();
-  }, []);
+    if (user) {
+      loadOrders();
+    }
+  }, [user]);
 
   const loadOrders = async () => {
     try {
       setLoading(true);
       const response = await getUserOrders(page);
-      console.log('Orders API response:', response.data);
       
-      // Handle API response or fallback data
       let ordersData = [];
       if (Array.isArray(response.data)) {
         ordersData = response.data;
@@ -26,7 +27,6 @@ const OrdersPage = () => {
         ordersData = response.data.data;
       }
       
-      console.log('Final orders data:', ordersData);
       setOrders(ordersData);
     } catch (error) {
       console.error('Failed to load orders:', error);
@@ -38,7 +38,6 @@ const OrdersPage = () => {
 
   const loadMoreOrders = () => {
     setPage(prev => prev + 1);
-    // In real app, append new orders to existing list
   };
 
   if (loading) return <Loader />;
@@ -53,7 +52,7 @@ const OrdersPage = () => {
         </div>
       ) : (
         <>
-          {orders && orders.length > 0 ? orders.map(order => (
+          {orders.map(order => (
             <div key={order.orderId} className="bg-white rounded-lg shadow-md p-6 mb-4 border">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -81,22 +80,20 @@ const OrdersPage = () => {
                   </span>
                 </div>
               </div>
-              {order.items && order.items.length > 0 && (
+              {order.items && Array.isArray(order.items) && order.items.length > 0 && (
                 <div className="border-t pt-3">
                   <p className="text-sm text-gray-600 mb-2">Items:</p>
                   <ul className="text-sm text-gray-700">
                     {order.items.map((item, index) => (
-                      <li key={index}>• {item}</li>
+                      <li key={index}>
+                        • {typeof item === 'string' ? item : `${item.menuItemName || 'Item'} x${item.quantity || 1}`}
+                      </li>
                     ))}
                   </ul>
                 </div>
               )}
             </div>
-          )) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No orders found</p>
-            </div>
-          )}
+          ))}
           
           <div className="text-center mt-8">
             <button 

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://fxbackend.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5142/api';
 const REQUEST_TIMEOUT = 30000;
 
 class ApiService {

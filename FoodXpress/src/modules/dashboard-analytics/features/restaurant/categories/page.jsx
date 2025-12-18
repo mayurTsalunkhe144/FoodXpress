@@ -11,7 +11,7 @@ function RestaurantCategories() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const restaurantId = 2
+  const restaurantId = localStorage.getItem('restaurantId') ? parseInt(localStorage.getItem('restaurantId')) : 2
   const hasLoaded = useRef(false)
 
   useEffect(() => {

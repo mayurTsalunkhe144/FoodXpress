@@ -15,7 +15,7 @@ function RestaurantOrders() {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [selectedOrder, setSelectedOrder] = useState(null)
-  const restaurantId = 2
+  const restaurantId =localStorage.getItem('restaurantId') ? parseInt(localStorage.getItem('restaurantId')) : 2
   const hasLoaded = useRef(false)
 
   useEffect(() => {

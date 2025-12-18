@@ -11,14 +11,11 @@ const UserManagementApp = () => {
     <div className="min-h-screen bg-gray-50 font-outfit">
       <ProfileHeader />
       <Routes>
-        <Route path="/" element={<Navigate to="/user/orders" replace />} />
-        <Route path="/user" element={<ProfileLayout />}>
-          <Route index element={<OrdersPage />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="edit" element={<EditProfilePage />} />
-          <Route path="addresses" element={<AddressesPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
+        <Route path="/" element={<Navigate to="orders" replace />} />
+        <Route path="orders" element={<ProfileLayout><OrdersPage /></ProfileLayout>} />
+        <Route path="edit" element={<ProfileLayout><EditProfilePage /></ProfileLayout>} />
+        <Route path="addresses" element={<ProfileLayout><AddressesPage /></ProfileLayout>} />
+        <Route path="settings" element={<ProfileLayout><SettingsPage /></ProfileLayout>} />
       </Routes>
     </div>
   );

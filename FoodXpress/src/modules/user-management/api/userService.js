@@ -1,40 +1,34 @@
 import axios from 'axios';
-import { isAuthenticated, getDefaultUserData, getAuthToken } from '../utils/authFallback';
 
 const API_BASE = 'http://myuser.runasp.net/api';
 
-// Configure axios
 axios.defaults.baseURL = API_BASE;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
-// Set auth token if available
-const token = getAuthToken();
-if (token) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('authToken');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
 
-// Fallback data when not authenticated
-const defaultData = getDefaultUserData();
+const getUserId = () => {
+  return localStorage.getItem('customerId') || localStorage.getItem('userId');
+};
 
 export const getUserProfile = async () => {
-  if (!isAuthenticated()) {
-    console.log('No authentication found, using default profile data');
-    return { data: defaultData.profile };
-  }
-  
   try {
-    const response = await axios.get('/user/profile');
+    const headers = getAuthHeaders();
+    const response = await axios.get('/user/profile', { headers });
     return response;
   } catch (error) {
     console.error('Error fetching user profile:', error);
-    console.log('Falling back to default profile data');
-    return { data: defaultData.profile };
+    return { data: { fullName: 'User', email: 'user@example.com' } };
   }
 };
 
 export const updateUserProfile = async (payload) => {
   try {
-    const response = await axios.put('/user/profile', payload);
+    const headers = getAuthHeaders();
+    const response = await axios.put('/user/profile', payload, { headers });
     return response;
   } catch (error) {
     console.error('Error updating user profile:', error);
@@ -43,67 +37,50 @@ export const updateUserProfile = async (payload) => {
 };
 
 export const getUserOrders = async (page = 1) => {
-  if (!isAuthenticated()) {
-    console.log('No authentication found, using default orders data');
-    return { data: defaultData.orders };
-  }
-  
   try {
-    const response = await axios.get(`/user/order?page=${page}`);
+    const headers = getAuthHeaders();
+    const userId = getUserId();
+    const response = await axios.get(`/user/order?page=${page}&userId=${userId}`, { headers });
     return response;
   } catch (error) {
     console.error('Error fetching user orders:', error);
-    console.log('Falling back to default orders data');
-    return { data: defaultData.orders };
+    return { data: [] };
   }
 };
 
 export const getUserAddresses = async () => {
-  if (!isAuthenticated()) {
-    console.log('No authentication found, using default addresses data');
-    return { data: { data: defaultData.addresses } };
-  }
-  
   try {
-    const response = await axios.get('/user/address');
+    const headers = getAuthHeaders();
+    const userId = getUserId();
+    const response = await axios.get(`/user/address?userId=${userId}`, { headers });
     return response;
   } catch (error) {
     console.error('Error fetching addresses:', error);
-    console.log('Falling back to default addresses data');
-    return { data: { data: defaultData.addresses } };
+    return { data: { data: [] } };
   }
 };
 
 export const addUserAddress = async (address) => {
   try {
-    // Map frontend fields to backend DTO
+    const headers = getAuthHeaders();
     const addressDto = {
       type: address.type,
-      address: address.address, // Frontend 'address' -> Backend 'address'
+      address: address.address,
       city: address.city,
       pincode: address.pincode,
       isDefault: address.isDefault
     };
-    
-    console.log('API Call - Adding address:', addressDto);
-    console.log('Request URL:', `${API_BASE}/user/address`);
-    
-    const response = await axios.post('/user/address', addressDto);
-    console.log('Success response:', response.status, response.data);
+    const response = await axios.post('/user/address', addressDto, { headers });
     return response;
   } catch (error) {
-    console.error('API Error Details:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
+    console.error('Error adding address:', error);
     throw error;
   }
 };
 
 export const updateUserAddress = async (id, address) => {
   try {
+    const headers = getAuthHeaders();
     const addressDto = {
       id: id,
       type: address.type,
@@ -112,19 +89,18 @@ export const updateUserAddress = async (id, address) => {
       pincode: address.pincode,
       isDefault: address.isDefault
     };
-    
-    console.log('Updating address:', id, addressDto);
-    const response = await axios.put(`/user/address/${id}`, addressDto);
+    const response = await axios.put(`/user/address/${id}`, addressDto, { headers });
     return response;
   } catch (error) {
-    console.error('Error updating address:', error.response?.data || error.message);
+    console.error('Error updating address:', error);
     throw error;
   }
 };
 
 export const deleteUserAddress = async (id) => {
   try {
-    const response = await axios.delete(`/user/address/${id}`);
+    const headers = getAuthHeaders();
+    const response = await axios.delete(`/user/address/${id}`, { headers });
     return response;
   } catch (error) {
     console.error('Error deleting address:', error);
@@ -134,7 +110,8 @@ export const deleteUserAddress = async (id) => {
 
 export const getUserFavorites = async () => {
   try {
-    const response = await axios.get('/user/favorite');
+    const headers = getAuthHeaders();
+    const response = await axios.get('/user/favorite', { headers });
     return response;
   } catch (error) {
     console.error('Error fetching favorites:', error);
@@ -143,24 +120,21 @@ export const getUserFavorites = async () => {
 };
 
 export const getUserSettings = async () => {
-  if (!isAuthenticated()) {
-    console.log('No authentication found, using default settings data');
-    return { data: defaultData.settings };
-  }
-  
   try {
-    const response = await axios.get('/user/settings');
+    const headers = getAuthHeaders();
+    const userId = getUserId();
+    const response = await axios.get(`/user/settings?userId=${userId}`, { headers });
     return response;
   } catch (error) {
     console.error('Error fetching settings:', error);
-    console.log('Falling back to default settings data');
-    return { data: defaultData.settings };
+    return { data: {} };
   }
 };
 
 export const updateUserSettings = async (settings) => {
   try {
-    const response = await axios.put('/user/settings', settings);
+    const headers = getAuthHeaders();
+    const response = await axios.put('/user/settings', settings, { headers });
     return response;
   } catch (error) {
     console.error('Error updating settings:', error);

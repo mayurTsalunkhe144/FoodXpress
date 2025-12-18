@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/hooks/useAuth.jsx";
 import "../styles/Navbar.css";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const searchRef = useRef(null);
+  const profileRef = useRef(null);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const closeSearch = () => {
     setIsClosing(true);
@@ -21,16 +26,34 @@ const Navbar = () => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         closeSearch();
       }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
     };
 
-    if (showSearch) {
+    if (showSearch || showProfileMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showSearch]);
+  }, [showSearch, showProfileMenu]);
+
+  const handleLoginClick = () => {
+    if (isAuthenticated) {
+      logout();
+      navigate('/');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowProfileMenu(false);
+    navigate('/');
+  };
 
   return (
     <nav className="nav">
@@ -75,12 +98,49 @@ const Navbar = () => {
             </li>
           </ul>
 
-          {/* Cart + Login */}
+          {/* Cart + Login/Profile */}
           <div className="nav-right">
             <NavLink to="/cart" className="nav-cart">
               <img src="/NavCart.png" alt="" className="NavCart"/>
             </NavLink>
-            <button className="nav-login">Login</button>
+            
+            {isAuthenticated ? (
+              <div className="profile-menu" ref={profileRef}>
+                <button 
+                  className="profile-btn"
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                >
+                  👤 {user?.fullName}
+                </button>
+                {showProfileMenu && (
+                  <div className="profile-dropdown">
+                    <div className="profile-info">
+                      <p className="profile-name">{user?.fullName}</p>
+                      <p className="profile-email">{user?.email}</p>
+                    </div>
+                    <button 
+                      className="profile-info-btn"
+                      onClick={() => {
+                        navigate('/user-management');
+                        setShowProfileMenu(false);
+                      }}
+                    >
+                      Profile Info
+                    </button>
+                    <button 
+                      className="profile-logout"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className="nav-login" onClick={handleLoginClick}>
+                Login
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Icon */}
@@ -90,7 +150,6 @@ const Navbar = () => {
         </div>
       </div>
 
-
       {/* Mobile Dropdown */}
       {menuOpen && (
         <div className="nav-mobile">
@@ -99,7 +158,15 @@ const Navbar = () => {
           <NavLink to="/restaurants">Restaurants</NavLink>
           <NavLink to="/offers">Offers</NavLink>
           <NavLink to="/cart">Cart</NavLink>
-          <button className="nav-login">Login</button>
+          {isAuthenticated ? (
+            <button className="nav-login" onClick={handleLogout}>
+              Logout ({user?.fullName})
+            </button>
+          ) : (
+            <button className="nav-login" onClick={handleLoginClick}>
+              Login
+            </button>
+          )}
         </div>
       )}
     </nav>

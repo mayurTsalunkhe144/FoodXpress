@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/TopRestaurants.css";
 import ApiService from "../services/apiService";
 import { Loader } from "../../../shared";
@@ -27,6 +28,7 @@ const getRestaurantEmoji = (name) => {
 const TopRestaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -42,6 +44,10 @@ const TopRestaurants = () => {
 
     fetchRestaurants();
   }, []);
+
+  const handleViewMenu = (restaurantId) => {
+    navigate(`/restaurants?restaurantId=${restaurantId}`);
+  };
 
   return (
     <section className="top-restaurants">
@@ -64,6 +70,12 @@ const TopRestaurants = () => {
                   <span className="status">Status: {restaurant.status}</span>
                   <span className="created">Since: {new Date(restaurant.createdAt).getFullYear()}</span>
                 </div>
+                <button 
+                  className="view-menu-btn"
+                  onClick={() => handleViewMenu(restaurant.restaurantId)}
+                >
+                  View Menu
+                </button>
               </div>
             </div>
           ))

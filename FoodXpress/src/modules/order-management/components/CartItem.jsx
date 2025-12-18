@@ -9,12 +9,14 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
     }
   };
 
+  const price = item.unitPrice || item.price || 0;
+  const lineTotal = item.lineTotal || item.total || 0;
+
   return (
     <div className="cart-item card p-md m-sm">
       <div className="item-info">
         <h4 className="text-lg font-semibold">{item.menuItemName}</h4>
-        <p className="text-sm text-muted">from {item.restaurantName}</p>
-        <p className="text-base font-medium">₹{item.unitPrice}</p>
+        <p className="text-sm text-muted">₹{price}</p>
       </div>
       
       <div className="item-controls">
@@ -35,7 +37,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
         </div>
         
         <div className="item-total">
-          <span className="text-lg font-bold">₹{item.lineTotal}</span>
+          <span className="text-lg font-bold">₹{lineTotal}</span>
         </div>
         
         <button 

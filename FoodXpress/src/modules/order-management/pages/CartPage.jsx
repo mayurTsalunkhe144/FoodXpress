@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { cartApi, apiService } from '../services/orderService.jsx';
 import CartItem from '../components/CartItem.jsx';
+import { cartApi } from '../services/orderService.jsx';
 import '../styles/shared.css';
 
 const CartPage = () => {
@@ -15,25 +15,10 @@ const CartPage = () => {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        
-        // First try to get username from token
         const tokenUsername = payload.unique_name || payload.name || payload.username;
         if (tokenUsername) {
           return tokenUsername;
         }
-        
-        // If no username in token, fetch from database using userId
-        const userId = payload.sub || payload.userId || payload.id;
-        if (userId) {
-          try {
-            const response = await apiService.getById('Dynamic/Users', userId);
-            return response.name || response.username || response.firstName || 'User';
-          } catch (error) {
-            console.error('Error fetching user from database:', error);
-            return 'User';
-          }
-        }
-        
         return 'User';
       } catch (error) {
         console.error('Error parsing token:', error);
@@ -47,13 +32,19 @@ const CartPage = () => {
     setLoading(true);
     try {
       const response = await cartApi.get();
-      const data = response?.data || response;
-      setCart(data);
+      const cartData = response?.data || response;
+      
+      setCart({
+        items: cartData?.items || [],
+        subTotal: cartData?.subTotal || 0,
+        deliveryFee: cartData?.deliveryFee || 0,
+        taxAmount: cartData?.taxAmount || 0,
+        totalAmount: cartData?.totalAmount || 0,
+        totalItems: cartData?.totalItems || 0
+      });
     } catch (err) {
       console.error('Error fetching cart:', err);
-      // Set empty cart structure for unauthenticated users
       setCart({
-        restaurants: [],
         items: [],
         subTotal: 0,
         deliveryFee: 0,
@@ -77,54 +68,41 @@ const CartPage = () => {
     fetchCart();
   }, [fetchCart]);
 
-  const recalculateCart = (currentCart) => {
-    const newCart = { ...currentCart };
-    const allItems = newCart.restaurants.flatMap(r => r.items).concat(newCart.items || []);
-    
-    newCart.subTotal = allItems.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
-    newCart.totalItems = allItems.reduce((acc, item) => acc + item.quantity, 0);
-    newCart.taxAmount = newCart.subTotal * 0.1;
-    newCart.totalAmount = newCart.subTotal + newCart.deliveryFee + newCart.taxAmount;
-
-    return newCart;
+  const handleUpdateQuantity = async (cartItemId, newQuantity) => {
+    try {
+      const response = await cartApi.updateItem(cartItemId, { quantity: newQuantity });
+      const cartData = response?.data || response;
+      setCart(prev => ({
+        ...prev,
+        items: cartData?.items || [],
+        totalAmount: cartData?.totalAmount || 0,
+        subTotal: cartData?.subTotal || 0,
+        totalItems: cartData?.totalItems || 0
+      }));
+    } catch (err) {
+      console.error('Error updating quantity:', err);
+    }
   };
 
-  const handleUpdateQuantity = (cartItemId, newQuantity) => {
-    setCart(prevCart => {
-      if (!prevCart) return null;
-
-      const newCart = { ...prevCart };
-      const itemToUpdate = 
-        newCart.items?.find(i => i.cartItemId === cartItemId) ||
-        newCart.restaurants.flatMap(r => r.items).find(i => i.cartItemId === cartItemId);
-
-      if (itemToUpdate) {
-        itemToUpdate.quantity = newQuantity;
-        itemToUpdate.lineTotal = itemToUpdate.unitPrice * newQuantity;
-      }
-
-      return recalculateCart(newCart);
-    });
+  const handleRemoveItem = async (cartItemId) => {
+    try {
+      const response = await cartApi.removeItem(cartItemId);
+      const cartData = response?.data || response;
+      setCart(prev => ({
+        ...prev,
+        items: cartData?.items || [],
+        totalAmount: cartData?.totalAmount || 0,
+        subTotal: cartData?.subTotal || 0,
+        totalItems: cartData?.totalItems || 0
+      }));
+    } catch (err) {
+      console.error('Error removing item:', err);
+    }
   };
 
-  const handleRemoveItem = (cartItemId) => {
-    setCart(prevCart => {
-      if (!prevCart) return null;
+  if (loading) return <div className="loading" style={{ padding: '40px', textAlign: 'center' }}>Loading cart...</div>;
 
-      let newCart = { ...prevCart };
-      newCart.items = newCart.items?.filter(i => i.cartItemId !== cartItemId) || [];
-      newCart.restaurants = newCart.restaurants.map(r => ({
-        ...r,
-        items: r.items.filter(i => i.cartItemId !== cartItemId)
-      })).filter(r => r.items.length > 0);
-
-      return recalculateCart(newCart);
-    });
-  };
-
-  if (loading) return <div className="loading">Loading...</div>;
-
-  const isEmpty = !cart || (cart.restaurants.length === 0 && cart.items?.length === 0);
+  const isEmpty = !cart || (cart.items || []).length === 0;
 
   if (isEmpty) {
     return (
@@ -133,7 +111,7 @@ const CartPage = () => {
           <div className="page-header">
             <h1>Welcome {username} to Cart</h1>
           </div>
-          <div className="empty-cart">
+          <div className="empty-cart" style={{ textAlign: 'center', padding: '40px' }}>
             <h2>Your cart is empty</h2>
             <p>Add food items to your cart to continue</p>
           </div>
@@ -149,32 +127,16 @@ const CartPage = () => {
           <h1>Welcome {username} to Cart ({cart.totalItems} items)</h1>
         </div>
 
-        {cart.items && cart.items.length > 0 && (
-          <div className="items-section">
-            {cart.items.map((item) => (
-              <CartItem 
-                key={item.cartItemId} 
-                item={item} 
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemove={handleRemoveItem} 
-              />
-            ))}
-          </div>
-        )}
-
-        {cart.restaurants.map((restaurant) => (
-          <div key={restaurant.restaurantId} className="restaurant-section">
-            <h3>{restaurant.restaurantName}</h3>
-            {restaurant.items.map((item) => (
-              <CartItem 
-                key={item.cartItemId} 
-                item={item} 
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemove={handleRemoveItem}
-              />
-            ))}
-          </div>
-        ))}
+        <div className="items-section">
+          {(cart.items || []).map((item) => (
+            <CartItem 
+              key={item.cartItemId} 
+              item={item} 
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemove={handleRemoveItem} 
+            />
+          ))}
+        </div>
 
         <div className="cart-summary">
           <div className="summary-line">

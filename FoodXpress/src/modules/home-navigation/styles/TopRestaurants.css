@@ -118,9 +118,10 @@
   align-items: center;
   padding-top: 15px;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
 }
 
-.rating, .delivery-time {
+.rating, .delivery-time, .status, .created {
   font-size: 14px;
   font-weight: 600;
   color: #555;
@@ -128,6 +129,30 @@
 
 .rating {
   color: #ff9800;
+}
+
+.view-menu-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.view-menu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 77, 77, 0.3);
+}
+
+.view-menu-btn:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 768px) {

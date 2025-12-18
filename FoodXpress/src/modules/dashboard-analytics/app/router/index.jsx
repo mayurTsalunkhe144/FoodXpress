@@ -34,11 +34,6 @@ function AppRouter() {
     currentUser = isAdminPath 
       ? { userId: 1, roleId: 1, fullName: 'Demo Admin', email: 'admin@demo.com' }
       : { userId: 2, roleId: 3, fullName: 'Demo Restaurant Owner', email: 'owner@demo.com' }
-    
-    // Set fallback restaurantId for restaurant owners
-    if (!isAdminPath) {
-      localStorage.setItem('restaurantId', '2')
-    }
   }
 
   return (

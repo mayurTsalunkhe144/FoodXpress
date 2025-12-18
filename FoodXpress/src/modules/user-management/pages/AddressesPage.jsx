@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { getUserAddresses, addUserAddress, updateUserAddress, deleteUserAddress } from '../api/userService';
 
 const AddressesPage = () => {
+  const { user } = useAuth();
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newAddress, setNewAddress] = useState({
@@ -25,26 +26,6 @@ const AddressesPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Debug: Check request payload
-    console.log('Sending address data:', JSON.stringify(newAddress, null, 2));
-    
-    // Debug: Validate data types
-    console.log('Data types:', {
-      type: typeof newAddress.type,
-      address: typeof newAddress.address,
-      city: typeof newAddress.city,
-      pincode: typeof newAddress.pincode,
-      isDefault: typeof newAddress.isDefault
-    });
-    
-    // Debug: Check headers
-    const token = localStorage.getItem('authToken');
-    console.log('Headers:', {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : 'No token'
-    });
-    
     try {
       if (editingId) {
         await updateUserAddress(editingId, newAddress);
@@ -57,10 +38,7 @@ const AddressesPage = () => {
       setShowForm(false);
     } catch (error) {
       console.error('Address save error:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      const errorMessage = error.response?.data?.message || error.message || 'Error saving address';
-      alert(errorMessage);
+      alert('Error saving address');
     }
   };
 
@@ -85,41 +63,21 @@ const AddressesPage = () => {
     try {
       setLoading(true);
       const response = await getUserAddresses();
-      // API returns nested structure: response.data.data
-      console.log('Full response:', response.data);
       const addressesData = Array.isArray(response.data.data) ? response.data.data : [];
-      console.log('Addresses data:', addressesData);
       setAddresses(addressesData);
     } catch (error) {
       console.error('Failed to load addresses:', error);
-      // Use fallback mock addresses when API fails
-      const mockAddresses = [
-        {
-          id: 1,
-          type: 'Home',
-          address: '123 Main Street, Apartment 4B',
-          city: 'Bangalore',
-          pincode: '560001',
-          isDefault: true
-        },
-        {
-          id: 2,
-          type: 'Work',
-          address: '456 Tech Park, Building C',
-          city: 'Bangalore',
-          pincode: '560066',
-          isDefault: false
-        }
-      ];
-      setAddresses(mockAddresses);
+      setAddresses([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAddresses();
-  }, []);
+    if (user) {
+      loadAddresses();
+    }
+  }, [user]);
 
   const handleCancel = () => {
     setShowForm(false);
