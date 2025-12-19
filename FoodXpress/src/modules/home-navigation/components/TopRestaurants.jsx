@@ -34,7 +34,7 @@ const TopRestaurants = () => {
     const fetchRestaurants = async () => {
       try {
         const data = await ApiService.fetchRestaurants();
-        setRestaurants(data.slice(0, 6)); // Show top 6 restaurants
+        setRestaurants(data.slice(0, 3)); // Show top 3 restaurants
       } catch (error) {
         console.error('Error loading restaurants:', error);
       } finally {
@@ -45,8 +45,14 @@ const TopRestaurants = () => {
     fetchRestaurants();
   }, []);
 
-  const handleViewMenu = (restaurantId) => {
-    navigate(`/restaurants?restaurantId=${restaurantId}`);
+  const handleViewMenu = async (restaurant) => {
+    try {
+      const fullRestaurant = await ApiService.fetchRestaurant(restaurant.restaurantId);
+      navigate('/restaurants', { state: { selectedRestaurant: fullRestaurant } });
+    } catch (error) {
+      console.error('Error loading restaurant details:', error);
+      navigate('/restaurants');
+    }
   };
 
   return (
@@ -59,6 +65,9 @@ const TopRestaurants = () => {
         ) : (
           restaurants.map((restaurant) => (
             <div key={restaurant.restaurantId} className="restaurant-card">
+              <div className="top-rated-badge">
+                <span className="badge-text">⭐ Top Rated</span>
+              </div>
               <div className="restaurant-image">
                 <span className="food-emoji">{getRestaurantEmoji(restaurant.name)}</span>
               </div>
@@ -72,7 +81,7 @@ const TopRestaurants = () => {
                 </div>
                 <button 
                   className="view-menu-btn"
-                  onClick={() => handleViewMenu(restaurant.restaurantId)}
+                  onClick={() => handleViewMenu(restaurant)}
                 >
                   View Menu
                 </button>

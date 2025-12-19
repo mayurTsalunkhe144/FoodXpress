@@ -1,12 +1,27 @@
-# Dependencies
-node_modules/
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Production builds
-dist/
-build/
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Environment variables
 .env
@@ -15,6 +30,7 @@ build/
 .env.test.local
 .env.production.local
 
+<<<<<<< HEAD
 # IDE files
 .vscode/
 .idea/
@@ -51,3 +67,20 @@ jspm_packages/
 
 # Optional eslint cache
 .eslintcache
+=======
+# Build outputs
+build/
+out/
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+>>>>>>> 323dc17fa2928fb0e88d61528c380b1648f9c0e1

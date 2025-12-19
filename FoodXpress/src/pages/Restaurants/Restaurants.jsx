@@ -1,12 +1,55 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "./Restaurants.css";
 import { ApiService } from "../../modules/home-navigation";
 import { Loader } from "../../shared";
+import cartService from "../../modules/home-navigation/services/cartService";
+import LoginModal from "../../modules/home-navigation/components/LoginModal";
+
+const getFoodEmoji = (name) => {
+  const lowerName = name.toLowerCase();
+  const foodEmojis = {
+    "pizza": "🍕", "burger": "🍔", "pasta": "🍝", "noodles": "🍜", "rice": "🍚",
+    "soup": "🍲", "salad": "🥗", "sandwich": "🥪", "wrap": "🌯", "taco": "🌮",
+    "sushi": "🍣", "chicken": "🍗", "beef": "🥩", "fish": "🐟", "shrimp": "🦐",
+    "cake": "🍰", "cookie": "🍪", "ice cream": "🍦", "donut": "🍩", "pie": "🥧",
+    "coffee": "☕", "tea": "🍵", "juice": "🧃", "smoothie": "🥤", "milkshake": "🥛",
+    "bread": "🍞", "croissant": "🥐", "bagel": "🥯", "pancake": "🥞", "waffle": "🧇",
+    "egg": "🥚", "bacon": "🥓", "cheese": "🧀", "avocado": "🥑", "tomato": "🍅",
+    "fries": "🍟", "hot dog": "🌭", "pretzel": "🥨", "popcorn": "🍿", "chips": "🥔"
+  };
+  for (const [key, emoji] of Object.entries(foodEmojis)) {
+    if (lowerName.includes(key)) return emoji;
+  }
+  return "🍽️";
+};
+
+const getRestaurantEmoji = (name) => {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('spicy treat')) return '🌶️';
+  if (lowerName.includes('healthy point')) return '🥗';
+  if (lowerName.includes('biryani house')) return '🍚';
+  if (lowerName.includes('pizza')) return '🍕';
+  if (lowerName.includes('burger') || lowerName.includes('grill')) return '🍔';
+  if (lowerName.includes('chinese') || lowerName.includes('noodle')) return '🥢';
+  if (lowerName.includes('indian') || lowerName.includes('curry')) return '🍛';
+  if (lowerName.includes('italian') || lowerName.includes('pasta')) return '🍝';
+  if (lowerName.includes('mexican') || lowerName.includes('taco')) return '🌮';
+  if (lowerName.includes('sushi') || lowerName.includes('japanese')) return '🍣';
+  if (lowerName.includes('cafe') || lowerName.includes('coffee')) return '☕';
+  if (lowerName.includes('bakery') || lowerName.includes('bread')) return '🥖';
+  if (lowerName.includes('bbq') || lowerName.includes('barbecue')) return '🍖';
+  return '🏪';
+};
 
 const Restaurants = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addedItems, setAddedItems] = useState(new Set());
+  const [loadingItems, setLoadingItems] = useState(new Set());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -20,8 +63,14 @@ const Restaurants = () => {
       }
     };
 
-    fetchRestaurants();
-  }, []);
+    // Check if restaurant was passed from TopRestaurants
+    if (location.state?.selectedRestaurant) {
+      setSelectedRestaurant(location.state.selectedRestaurant);
+      setLoading(false);
+    } else {
+      fetchRestaurants();
+    }
+  }, [location.state]);
 
   const handleRestaurantClick = async (restaurant) => {
     try {
@@ -34,6 +83,33 @@ const Restaurants = () => {
 
   const handleBackClick = () => {
     setSelectedRestaurant(null);
+  };
+
+  const handleAddToCart = async (item) => {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    setAddedItems(prev => new Set([...prev, item.menuItemId]));
+    
+    try {
+      await cartService.addItem({
+        menuItemId: item.menuItemId,
+        quantity: 1,
+        price: item.price
+      });
+      
+      console.log(`Added ${item.name} to cart`);
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      setAddedItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(item.menuItemId);
+        return newSet;
+      });
+    }
   };
 
   if (selectedRestaurant) {
@@ -61,22 +137,25 @@ const Restaurants = () => {
               <h3>{category.name}</h3>
               <div className="menu-grid">
                 {category.menuItems?.map(item => (
-                  <div key={item.menuItemId} className="menu-item">
-                    <div className="item-image">
-                      <img src={item.imageUrl || '/NavLogo.png'} alt={item.name} />
-                    </div>
-                    <div className="item-info">
-                      <h4>{item.name}</h4>
-                      <p className="item-description">{item.description || 'No description'}</p>
-                      <div className="item-details">
-                        <span className="price">${item.price}</span>
-                        <span className={`availability ${item.isAvailable ? 'available' : 'unavailable'}`}>
-                          {item.isAvailable ? 'Available' : 'Unavailable'}
-                        </span>
+                  <div key={item.menuItemId} className="food-card">
+                    <div className="food-image">
+                      <div className="food-placeholder">
+                        <span>{getFoodEmoji(item.name)}</span>
                       </div>
-                      <button className="add-btn" disabled={!item.isAvailable}>
-                        {item.isAvailable ? 'Add to Cart' : 'Unavailable'}
-                      </button>
+                    </div>
+                    <div className="food-content">
+                      <h3 className="food-name">{item.name}</h3>
+                      <p className="food-desc">{item.description || 'Delicious item'}</p>
+                      <div className="food-bottom">
+                        <span className="food-price">${item.price}</span>
+                        <button 
+                          className={`cart-btn ${addedItems.has(item.menuItemId) ? 'added' : ''}`}
+                          onClick={() => handleAddToCart(item)}
+                          disabled={!item.isAvailable || addedItems.has(item.menuItemId)}
+                        >
+                          {addedItems.has(item.menuItemId) ? 'Added' : 'Add to Cart'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )) || <p>No items in this category</p>}
@@ -106,7 +185,7 @@ const Restaurants = () => {
               onClick={() => handleRestaurantClick(restaurant)}
             >
               <div className="restaurant-image">
-                <img src='/NavLogo.png' alt={restaurant.name} />
+                <span className="restaurant-emoji">{getRestaurantEmoji(restaurant.name)}</span>
               </div>
               <div className="restaurant-info">
                 <h3>{restaurant.name}</h3>
@@ -120,6 +199,7 @@ const Restaurants = () => {
           ))
         )}
       </div>
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 };

@@ -15,7 +15,7 @@ A modular React application for food delivery management with team-based develop
 ## Project Structure
 
 ```
-reactjsx/src/
+FoodXpress/src/
 ├── modules/
 │   ├── auth/                    # Janardhan's module
 │   ├── user-management/         # Tanushka's module
@@ -63,7 +63,7 @@ import { Button, Modal } from '@/shared';
 ## Getting Started
 
 ```bash
-cd reactjsx
+cd FoodXpress
 npm install
 npm run dev
 ```

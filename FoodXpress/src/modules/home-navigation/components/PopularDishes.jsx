@@ -56,7 +56,7 @@ const PopularDishes = () => {
       return;
     }
 
-    setLoadingItems(prev => new Set([...prev, dish.menuItemId]));
+    setAddedItems(prev => new Set([...prev, dish.menuItemId]));
     
     try {
       await cartService.addItem({
@@ -65,13 +65,10 @@ const PopularDishes = () => {
         price: dish.price
       });
       
-      setAddedItems(prev => new Set([...prev, dish.menuItemId]));
       console.log(`Added ${dish.name} to cart`);
     } catch (error) {
       console.error('Error adding item to cart:', error);
-      alert('Failed to add item to cart');
-    } finally {
-      setLoadingItems(prev => {
+      setAddedItems(prev => {
         const newSet = new Set(prev);
         newSet.delete(dish.menuItemId);
         return newSet;
@@ -94,34 +91,27 @@ const PopularDishes = () => {
             <Loader message="Loading popular dishes..." />
           ) : (
             popularDishes.map((dish) => (
-            <div key={dish.menuItemId} className="dish-card">
-              <div className="dish-image">
-                {dish.imageUrl && !imageErrors[dish.menuItemId] ? (
-                  <img 
-                    src={dish.imageUrl} 
-                    alt={dish.name}
-                    crossOrigin="anonymous"
-                    onError={() => handleImageError(dish.menuItemId)}
-                  />
-                ) : (
-                  <div className="dish-emoji-placeholder">
-                    <span className="dish-emoji">{getFoodEmoji(dish.name)}</span>
-                  </div>
-                )}
+            <div key={dish.menuItemId} className="food-card">
+              <div className="popular-badge">
+                <span className="badge-text">🔥 Popular</span>
               </div>
-              
-              <div className="dish-info">
-                <h3>{dish.name}</h3>
-                <p className="dish-restaurant">{dish.category?.restaurant?.name || 'Restaurant'}</p>
-                <p className="dish-description">{dish.description || 'No description available'}</p>
-                <div className="dish-footer">
-                  <span className="dish-price">${dish.price}</span>
+              <div className="food-image">
+                <div className="food-placeholder">
+                  <span>{getFoodEmoji(dish.name)}</span>
+                </div>
+              </div>
+              <div className="food-content">
+                <h3 className="food-name">{dish.name}</h3>
+                <p className="food-restaurant">{dish.category?.restaurant?.name || 'Restaurant'}</p>
+                <p className="food-desc">{dish.description || 'Delicious food item'}</p>
+                <div className="food-bottom">
+                  <span className="food-price">${dish.price}</span>
                   <button 
-                    className={`add-btn ${addedItems.has(dish.menuItemId) ? 'added' : ''} ${loadingItems.has(dish.menuItemId) ? 'loading' : ''}`}
+                    className={`cart-btn ${addedItems.has(dish.menuItemId) ? 'added' : ''}`}
                     onClick={() => handleAddToCart(dish)}
-                    disabled={loadingItems.has(dish.menuItemId) || addedItems.has(dish.menuItemId) || !dish.isAvailable}
+                    disabled={addedItems.has(dish.menuItemId) || !dish.isAvailable}
                   >
-                    {!dish.isAvailable ? 'Unavailable' : addedItems.has(dish.menuItemId) ? 'Added ✓' : loadingItems.has(dish.menuItemId) ? 'Adding...' : 'Add to Cart'}
+                    {addedItems.has(dish.menuItemId) ? 'Added' : 'Add to Cart'}
                   </button>
                 </div>
               </div>

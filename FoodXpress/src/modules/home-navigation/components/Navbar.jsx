@@ -8,6 +8,7 @@ const Navbar = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const searchRef = useRef(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
@@ -55,6 +56,20 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/menu?search=${encodeURIComponent(searchQuery.trim())}`);
+      closeSearch();
+      setSearchQuery('');
+    }
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <nav className="nav">
       <div className="nav-container">
@@ -77,8 +92,14 @@ const Navbar = () => {
           {/* Small inline search (visible only when clicked) */}
           {showSearch && (
             <div className={`nav-inline-search ${isClosing ? 'closing' : ''}`} ref={searchRef}>
-              <input type="text" placeholder="What are you looking for ?" />
-              <button>Go</button>
+              <input 
+                type="text" 
+                placeholder="Search food items or restaurants..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
+              />
+              <button onClick={handleSearch}>Go</button>
             </div>
           )}
 
